@@ -3,192 +3,719 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>동전 던지기 게임</title>
+  <title>미니 카지노</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 2rem 1rem; }
+    body { font-family: sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 0 1rem 4rem; }
     .game-wrap { width: 100%; max-width: 480px; }
+ 
+    /* 헤더 */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 0 1rem; border-bottom: 1px solid #ddd; margin-bottom: 1.5rem; }
+    .header-title { font-size: 16px; font-weight: 500; color: #111; }
+    .menu-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; flex-direction: column; gap: 5px; }
+    .menu-btn span { display: block; width: 22px; height: 2px; background: #333; border-radius: 2px; }
+    .dropdown { display: none; position: absolute; right: calc(50% - 240px); background: #fff; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; min-width: 170px; overflow: hidden; }
+    .dropdown.open { display: block; }
+    .dropdown-item { padding: 12px 16px; font-size: 14px; cursor: pointer; color: #333; display: flex; align-items: center; gap: 8px; }
+    .dropdown-item:hover { background: #f5f5f5; }
+    .dropdown-item.active { font-weight: 500; color: #378ADD; }
+ 
+    /* 공통 */
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
     .stat-card { background: #ebebeb; border-radius: 8px; padding: 0.75rem 1rem; text-align: center; }
     .stat-label { font-size: 12px; color: #888; margin-bottom: 4px; }
     .stat-value { font-size: 20px; font-weight: 500; color: #111; }
-    .coin-area { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; margin: 1.5rem 0; }
-    .coin { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 3px solid #ccc; background: #ebebeb; }
-    .coin.flipping { animation: spin 0.6s ease-out; }
-    @keyframes spin {
-      0% { transform: rotateY(0deg) scale(1); }
-      50% { transform: rotateY(900deg) scale(0.8); }
-      100% { transform: rotateY(1800deg) scale(1); }
-    }
-    .result-msg { text-align: center; font-size: 15px; font-weight: 500; min-height: 24px; }
-    .result-win { color: #0F6E56; }
-    .result-lose { color: #993C1D; }
+    .info-bar { display: flex; justify-content: center; gap: 16px; font-size: 13px; color: #888; background: #ebebeb; border-radius: 8px; padding: 8px 12px; text-align: center; }
+    .info-bar span { font-weight: 500; color: #111; }
     .divider { border: none; border-top: 1px solid #ddd; margin: 1rem 0; }
     .bet-area { display: flex; flex-direction: column; gap: 12px; }
     .bet-row { display: flex; align-items: center; gap: 12px; }
     .bet-row label { font-size: 14px; color: #888; min-width: 60px; }
-    .choice-btns { display: flex; gap: 8px; }
-    .choice-btn { padding: 8px 20px; border-radius: 8px; border: 2px solid #ccc; background: transparent; color: #111; cursor: pointer; font-size: 14px; transition: background 0.15s; }
-    .choice-btn:hover { background: #ebebeb; }
+    .mult-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .mult-btn { padding: 8px 14px; border-radius: 8px; border: 2px solid #bbb; background: #fff; color: #333; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.2; }
+    .mult-btn:hover { background: #f0f0f0; }
+    .mult-btn .prob { font-size: 11px; color: #888; font-weight: 400; }
     .bet-input-wrap { display: flex; align-items: center; gap: 8px; flex: 1; }
     .bet-input { width: 100px; padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; background: #fff; color: #111; font-size: 14px; }
+    .bet-input.over { border-color: #D85A30; background: #FFF0EC; }
+    .bet-warn { font-size: 11px; color: #D85A30; margin-top: 2px; min-height: 16px; }
     .quick-btns { display: flex; gap: 6px; }
-    .quick-btn { padding: 5px 10px; font-size: 12px; border-radius: 8px; border: 1px solid #ddd; background: transparent; color: #888; cursor: pointer; }
-    .quick-btn:hover { background: #ebebeb; }
-    .flip-btn { width: 100%; padding: 12px; border-radius: 12px; border: none; background: #378ADD; color: #fff; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 4px; transition: opacity 0.15s; }
-    .flip-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .flip-btn:not(:disabled):hover { opacity: 0.88; }
-    .log-area { margin-top: 1.5rem; }
-    .log-title { font-size: 13px; color: #888; margin-bottom: 8px; }
-    .log-list { display: flex; flex-direction: column; gap: 4px; max-height: 140px; overflow-y: auto; }
-    .log-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 5px 8px; border-radius: 8px; background: #ebebeb; }
+    .quick-btn { padding: 6px 12px; font-size: 12px; border-radius: 8px; border: 1px solid #bbb; background: #fff; color: #555; cursor: pointer; font-weight: 500; }
+    .quick-btn:hover { background: #f0f0f0; }
+    .action-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; background: #378ADD; color: #fff; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 4px; transition: opacity 0.15s; }
+    .action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .action-btn:not(:disabled):hover { opacity: 0.88; }
+    .result-msg { text-align: center; font-size: 15px; font-weight: 500; min-height: 24px; }
+    .result-win { color: #0F6E56; }
+    .result-lose { color: #993C1D; }
+    .choice-btns { display: flex; gap: 8px; }
+    .choice-btn { padding: 10px 22px; border-radius: 8px; border: 2px solid #bbb; background: #fff; color: #333; cursor: pointer; font-size: 14px; font-weight: 500; }
+    .choice-btn:hover { background: #f0f0f0; }
+ 
+    /* 로그 */
+    .log-area { margin-top: 2rem; }
+    .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .log-title { font-size: 13px; color: #888; }
+    .log-clear-btn { font-size: 12px; color: #888; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+    .log-clear-btn:hover { background: #f0f0f0; }
+    .log-list { display: flex; flex-direction: column; gap: 4px; }
+    .log-empty { font-size: 13px; color: #888; padding: 6px 8px; }
+    .log-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 8px 10px; border-radius: 8px; background: #ebebeb; }
     .log-win { border-left: 3px solid #1D9E75; }
     .log-lose { border-left: 3px solid #D85A30; }
-    .log-right { display: flex; gap: 8px; align-items: center; }
+    .log-left { display: flex; flex-direction: column; gap: 2px; }
+    .log-num { font-size: 11px; color: #aaa; }
+    .log-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .log-amount { font-weight: 500; }
+    .log-balance { font-size: 11px; }
+ 
+    /* 동전 */
+    #coin-game { display: block; }
+    .coin-area { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin: 1.5rem 0; }
+    .coin { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 3px solid #ccc; background: #ebebeb; }
+    .coin.flipping { animation: coinSpin 0.6s ease-out; }
+    @keyframes coinSpin {
+      0% { transform: rotateY(0deg) scale(1); }
+      50% { transform: rotateY(900deg) scale(0.8); }
+      100% { transform: rotateY(1800deg) scale(1); }
+    }
+ 
+    /* 달팽이 */
+    #snail-game { display: none; }
+    .snail-track-wrap { margin: 1.5rem 0; }
+    .snail-track { position: relative; height: 80px; background: #e8e0d0; border-radius: 12px; overflow: hidden; border: 2px solid #c8b89a; }
+    .track-line { position: absolute; top: 50%; left: 50%; width: 2px; height: 100%; background: #aaa; transform: translate(-50%, -50%); opacity: 0.5; }
+    .track-label-left { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #888; }
+    .track-label-right { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #888; }
+    .snail { position: absolute; top: 50%; font-size: 32px; transform: translateY(-50%); left: calc(50% - 16px); }
+    .dir-btns { display: flex; gap: 8px; }
+    .dir-btn { flex: 1; padding: 12px; border-radius: 8px; border: 2px solid #bbb; background: #fff; color: #333; cursor: pointer; font-size: 15px; font-weight: 500; text-align: center; }
+    .dir-btn:hover { background: #f0f0f0; }
+ 
+    /* 홀짝 */
+    #oddeven-game { display: none; }
+    .dice-area { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin: 1.5rem 0; }
+    .dice { width: 90px; height: 90px; background: #fff; border: 3px solid #ccc; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 48px; }
+    .dice.rolling { animation: diceRoll 0.6s ease-out; }
+    @keyframes diceRoll {
+      0%   { transform: rotate(0deg) scale(1); }
+      25%  { transform: rotate(20deg) scale(0.9); }
+      50%  { transform: rotate(-20deg) scale(0.85); }
+      75%  { transform: rotate(10deg) scale(0.9); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+    .dice-faces { display: flex; gap: 6px; flex-wrap: wrap; }
+ 
+    /* 슬롯 */
+    #slot-game { display: none; }
+    .slot-area { margin: 1.5rem 0; }
+    .slot-machine { background: #222; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .reels { display: flex; gap: 8px; }
+    .reel { width: 80px; height: 90px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 44px; overflow: hidden; position: relative; }
+    .reel.spinning { animation: reelSpin 0.1s linear infinite; }
+    @keyframes reelSpin {
+      0%   { transform: translateY(0); }
+      25%  { transform: translateY(-6px); }
+      75%  { transform: translateY(6px); }
+      100% { transform: translateY(0); }
+    }
+    .slot-paytable { width: 100%; background: #333; border-radius: 10px; padding: 10px 14px; }
+    .slot-paytable-title { font-size: 11px; color: #aaa; margin-bottom: 6px; }
+    .slot-paytable-row { display: flex; justify-content: space-between; font-size: 12px; color: #ddd; padding: 2px 0; }
+    .slot-paytable-row span:last-child { color: #FFD700; font-weight: 500; }
+    .slot-spin-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; background: #FFD700; color: #111; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 4px; transition: opacity 0.15s; }
+    .slot-spin-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .slot-spin-btn:not(:disabled):hover { opacity: 0.88; }
+    .slot-bet-area { display: flex; flex-direction: column; gap: 12px; margin-top: 1rem; }
   </style>
 </head>
 <body>
 <div class="game-wrap">
+  <div class="header">
+    <div class="header-title" id="header-title">🪙 동전 던지기</div>
+    <div style="position:relative;">
+      <button class="menu-btn" onclick="toggleMenu()" id="menu-btn">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="dropdown" id="dropdown">
+        <div class="dropdown-item active" id="menu-coin"    onclick="switchGame('coin')">🪙 동전 던지기</div>
+        <div class="dropdown-item"        id="menu-snail"   onclick="switchGame('snail')">🐌 달팽이 게임</div>
+        <div class="dropdown-item"        id="menu-oddeven" onclick="switchGame('oddeven')">🎲 홀짝 게임</div>
+        <div class="dropdown-item"        id="menu-slot"    onclick="switchGame('slot')">🎰 슬롯머신</div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- 공통 스탯 -->
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">잔액</div><div class="stat-value" id="balance">1,000</div></div>
     <div class="stat-card"><div class="stat-label">총 손익</div><div class="stat-value" id="profit" style="color:#888;">+0</div></div>
     <div class="stat-card"><div class="stat-label">승리</div><div class="stat-value" id="wins" style="color:#0F6E56;">0</div></div>
     <div class="stat-card"><div class="stat-label">패배</div><div class="stat-value" id="losses" style="color:#993C1D;">0</div></div>
   </div>
-
-  <div class="coin-area">
-    <div class="coin" id="coin">🪙</div>
-    <div class="result-msg" id="result-msg"></div>
-  </div>
-
-  <hr class="divider">
-
-  <div class="bet-area">
-    <div class="bet-row">
-      <label>선택</label>
-      <div class="choice-btns">
-        <button class="choice-btn" id="btn-heads" onclick="selectChoice('heads')">앞면 👑</button>
-        <button class="choice-btn" id="btn-tails" onclick="selectChoice('tails')">뒷면 🌙</button>
-      </div>
+ 
+  <!-- 동전 게임 -->
+  <div id="coin-game">
+    <div class="coin-area">
+      <div class="coin" id="coin">🪙</div>
+      <div class="result-msg" id="coin-result-msg"></div>
     </div>
-    <div class="bet-row">
-      <label>베팅액</label>
-      <div class="bet-input-wrap">
-        <input class="bet-input" type="number" id="bet-amount" value="100" min="1" />
-        <div class="quick-btns">
-          <button class="quick-btn" onclick="setBet(0.25)">1/4</button>
-          <button class="quick-btn" onclick="setBet(0.5)">절반</button>
-          <button class="quick-btn" onclick="setBet(1)">전액</button>
+    <div class="info-bar">배율 <span id="coin-cur-mult">-</span> &nbsp;|&nbsp; 확률 <span id="coin-cur-prob">-</span> &nbsp;|&nbsp; 예상 수익 <span id="coin-cur-prize">-</span></div>
+    <hr class="divider">
+    <div class="bet-area">
+      <div class="bet-row">
+        <label>선택</label>
+        <div class="choice-btns">
+          <button class="choice-btn" id="btn-heads" onclick="coinSelectChoice('heads')">앞면 👑</button>
+          <button class="choice-btn" id="btn-tails" onclick="coinSelectChoice('tails')">뒷면 🌙</button>
         </div>
       </div>
+      <div class="bet-row" style="align-items:flex-start;">
+        <label style="padding-top:6px;">배율</label>
+        <div class="mult-btns" id="coin-mult-btns"></div>
+      </div>
+      <div class="bet-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+        <div style="display:flex;align-items:center;gap:12px;width:100%;">
+          <label>베팅액</label>
+          <div class="bet-input-wrap">
+            <input class="bet-input" type="number" id="coin-bet" value="100" min="1" oninput="validateBet('coin')" />
+            <div class="quick-btns">
+              <button class="quick-btn" onclick="setBet('coin',0.25)">1/4</button>
+              <button class="quick-btn" onclick="setBet('coin',0.5)">절반</button>
+              <button class="quick-btn" onclick="setBet('coin',1)">전액</button>
+            </div>
+          </div>
+        </div>
+        <div style="padding-left:72px;"><div class="bet-warn" id="coin-bet-warn"></div></div>
+      </div>
+      <button class="action-btn" id="coin-flip-btn" onclick="coinFlip()" disabled>선택 후 던지기</button>
     </div>
-    <button class="flip-btn" id="flip-btn" onclick="flip()" disabled>선택 후 던지기</button>
   </div>
-
+ 
+  <!-- 달팽이 게임 -->
+  <div id="snail-game">
+    <div class="snail-track-wrap">
+      <div class="snail-track" id="snail-track">
+        <div class="track-line"></div>
+        <div class="track-label-left">← 왼쪽</div>
+        <div class="track-label-right">오른쪽 →</div>
+        <div class="snail" id="snail">🐌</div>
+      </div>
+    </div>
+    <div class="result-msg" id="snail-result-msg" style="margin-bottom:1rem;"></div>
+    <div class="info-bar">배율 <span id="snail-cur-mult">-</span> &nbsp;|&nbsp; 확률 <span id="snail-cur-prob">-</span> &nbsp;|&nbsp; 예상 수익 <span id="snail-cur-prize">-</span></div>
+    <hr class="divider">
+    <div class="bet-area">
+      <div class="bet-row">
+        <label>방향</label>
+        <div class="dir-btns">
+          <button class="dir-btn" id="btn-left" onclick="snailSelectDir('left')">← 왼쪽</button>
+          <button class="dir-btn" id="btn-right" onclick="snailSelectDir('right')">오른쪽 →</button>
+        </div>
+      </div>
+      <div class="bet-row" style="align-items:flex-start;">
+        <label style="padding-top:6px;">배율</label>
+        <div class="mult-btns" id="snail-mult-btns"></div>
+      </div>
+      <div class="bet-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+        <div style="display:flex;align-items:center;gap:12px;width:100%;">
+          <label>베팅액</label>
+          <div class="bet-input-wrap">
+            <input class="bet-input" type="number" id="snail-bet" value="100" min="1" oninput="validateBet('snail')" />
+            <div class="quick-btns">
+              <button class="quick-btn" onclick="setBet('snail',0.25)">1/4</button>
+              <button class="quick-btn" onclick="setBet('snail',0.5)">절반</button>
+              <button class="quick-btn" onclick="setBet('snail',1)">전액</button>
+            </div>
+          </div>
+        </div>
+        <div style="padding-left:72px;"><div class="bet-warn" id="snail-bet-warn"></div></div>
+      </div>
+      <button class="action-btn" id="snail-go-btn" onclick="snailGo()" disabled>출발!</button>
+    </div>
+  </div>
+ 
+  <!-- 홀짝 게임 -->
+  <div id="oddeven-game">
+    <div class="dice-area">
+      <div class="dice" id="dice">🎲</div>
+      <div class="result-msg" id="oddeven-result-msg"></div>
+    </div>
+    <div class="info-bar">배율 <span id="oe-cur-mult">-</span> &nbsp;|&nbsp; 확률 <span id="oe-cur-prob">-</span> &nbsp;|&nbsp; 예상 수익 <span id="oe-cur-prize">-</span></div>
+    <hr class="divider">
+    <div class="bet-area">
+      <div class="bet-row">
+        <label>선택</label>
+        <div class="choice-btns">
+          <button class="choice-btn" id="btn-odd"  onclick="oeSelect('odd')">홀 (1·3·5)</button>
+          <button class="choice-btn" id="btn-even" onclick="oeSelect('even')">짝 (2·4·6)</button>
+        </div>
+      </div>
+      <div class="bet-row" style="align-items:flex-start;">
+        <label style="padding-top:6px;">배율</label>
+        <div class="mult-btns" id="oe-mult-btns"></div>
+      </div>
+      <div class="bet-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+        <div style="display:flex;align-items:center;gap:12px;width:100%;">
+          <label>베팅액</label>
+          <div class="bet-input-wrap">
+            <input class="bet-input" type="number" id="oe-bet" value="100" min="1" oninput="validateBet('oe')" />
+            <div class="quick-btns">
+              <button class="quick-btn" onclick="setBet('oe',0.25)">1/4</button>
+              <button class="quick-btn" onclick="setBet('oe',0.5)">절반</button>
+              <button class="quick-btn" onclick="setBet('oe',1)">전액</button>
+            </div>
+          </div>
+        </div>
+        <div style="padding-left:72px;"><div class="bet-warn" id="oe-bet-warn"></div></div>
+      </div>
+      <button class="action-btn" id="oe-roll-btn" onclick="oeRoll()" disabled>주사위 굴리기!</button>
+    </div>
+  </div>
+ 
+  <!-- 슬롯머신 -->
+  <div id="slot-game">
+    <div class="slot-area">
+      <div class="slot-machine">
+        <div class="reels">
+          <div class="reel" id="reel0">🎰</div>
+          <div class="reel" id="reel1">🎰</div>
+          <div class="reel" id="reel2">🎰</div>
+        </div>
+        <div class="slot-paytable">
+          <div class="slot-paytable-title">당첨표 (3개 일치)</div>
+          <div class="slot-paytable-row"><span>7️⃣ 7️⃣ 7️⃣</span><span>×50</span></div>
+          <div class="slot-paytable-row"><span>💎 💎 💎</span><span>×20</span></div>
+          <div class="slot-paytable-row"><span>🍇 🍇 🍇</span><span>×10</span></div>
+          <div class="slot-paytable-row"><span>🍊 🍊 🍊</span><span>×5</span></div>
+          <div class="slot-paytable-row"><span>🍋 🍋 🍋</span><span>×3</span></div>
+          <div class="slot-paytable-row"><span>🍒 🍒 🍒</span><span>×2</span></div>
+        </div>
+      </div>
+      <div class="result-msg" id="slot-result-msg" style="margin-top:1rem;"></div>
+    </div>
+    <div class="slot-bet-area">
+      <div class="bet-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+        <div style="display:flex;align-items:center;gap:12px;width:100%;">
+          <label>베팅액</label>
+          <div class="bet-input-wrap">
+            <input class="bet-input" type="number" id="slot-bet" value="100" min="1" oninput="validateBet('slot')" />
+            <div class="quick-btns">
+              <button class="quick-btn" onclick="setBet('slot',0.25)">1/4</button>
+              <button class="quick-btn" onclick="setBet('slot',0.5)">절반</button>
+              <button class="quick-btn" onclick="setBet('slot',1)">전액</button>
+            </div>
+          </div>
+        </div>
+        <div style="padding-left:72px;"><div class="bet-warn" id="slot-bet-warn"></div></div>
+      </div>
+      <button class="slot-spin-btn" id="slot-spin-btn" onclick="slotSpin()">🎰 스핀!</button>
+    </div>
+  </div>
+ 
+  <!-- 공통 로그 -->
   <div class="log-area">
-    <div class="log-title">게임 기록</div>
+    <div class="log-header">
+      <div class="log-title" id="log-title">게임 기록</div>
+      <button class="log-clear-btn" onclick="clearLog()">기록 지우기</button>
+    </div>
     <div class="log-list" id="log-list">
-      <div style="font-size:13px; color:#888; padding:6px 8px;">아직 게임 기록이 없어요.</div>
+      <div class="log-empty">아직 게임 기록이 없어요.</div>
     </div>
   </div>
 </div>
-
+ 
 <script>
-  let balance = 1000, wins = 0, losses = 0, profit = 0, choice = null, flipping = false;
+  let balance = 1000, wins = 0, losses = 0, profit = 0, gameCount = 0;
   const logs = [];
-
-  function fmt(n) { return n.toLocaleString(); }
-
+ 
+  function fmt(n) { return n < 0 ? '-' + Math.abs(n).toLocaleString() : n.toLocaleString(); }
+ 
   function updateStats() {
-    document.getElementById('balance').textContent = fmt(balance);
+    const balEl = document.getElementById('balance');
+    balEl.textContent = fmt(balance);
+    balEl.style.color = balance < 0 ? '#993C1D' : '#111';
     const pEl = document.getElementById('profit');
     pEl.textContent = (profit >= 0 ? '+' : '') + fmt(profit);
     pEl.style.color = profit > 0 ? '#0F6E56' : profit < 0 ? '#993C1D' : '#888';
     document.getElementById('wins').textContent = wins;
     document.getElementById('losses').textContent = losses;
+    ['coin','snail','oe','slot'].forEach(g => validateBet(g));
   }
-
-  function selectChoice(c) {
-    choice = c;
-    const hBtn = document.getElementById('btn-heads');
-    const tBtn = document.getElementById('btn-tails');
-    hBtn.style.background = c === 'heads' ? '#378ADD' : '';
-    hBtn.style.borderColor = c === 'heads' ? '#185FA5' : '';
-    hBtn.style.color = c === 'heads' ? '#ffffff' : '';
-    tBtn.style.background = c === 'tails' ? '#378ADD' : '';
-    tBtn.style.borderColor = c === 'tails' ? '#185FA5' : '';
-    tBtn.style.color = c === 'tails' ? '#ffffff' : '';
-    document.getElementById('flip-btn').disabled = false;
+ 
+  function validateBet(game) {
+    const input = document.getElementById(game + '-bet');
+    const warn  = document.getElementById(game + '-bet-warn');
+    if (!input) return true;
+    let val = parseInt(input.value);
+    if (isNaN(val) || val < 1) { input.value = 1; val = 1; }
+    if (balance > 0 && val > balance) {
+      input.classList.add('over');
+      warn.textContent = `잔액(${fmt(balance)}원)을 초과할 수 없어요`;
+      refreshReady(); return false;
+    }
+    input.classList.remove('over');
+    warn.textContent = '';
+    refreshReady(); return true;
   }
-
-  function setBet(ratio) {
-    document.getElementById('bet-amount').value = Math.max(1, Math.floor(balance * ratio));
+ 
+  function getBet(game) {
+    const v = parseInt(document.getElementById(game + '-bet').value);
+    return isNaN(v) ? 1 : v;
   }
-
-  function flip() {
-    if (flipping || !choice) return;
-    const bet = parseInt(document.getElementById('bet-amount').value);
-    if (isNaN(bet) || bet < 1) { alert('베팅액을 올바르게 입력해주세요.'); return; }
-    if (bet > balance) { alert('잔액이 부족해요!'); return; }
-
-    flipping = true;
-    document.getElementById('flip-btn').disabled = true;
-    const coin = document.getElementById('coin');
-    coin.className = 'coin flipping';
-    coin.textContent = '🪙';
-    document.getElementById('result-msg').textContent = '';
-
-    setTimeout(() => {
-      const result = Math.random() < 0.5 ? 'heads' : 'tails';
-      const won = result === choice;
-      coin.className = 'coin';
-      coin.textContent = result === 'heads' ? '👑' : '🌙';
-
-      const msgEl = document.getElementById('result-msg');
-      if (won) { balance += bet; profit += bet; wins++; msgEl.textContent = `승리! +${fmt(bet)}원`; msgEl.className = 'result-msg result-win'; }
-      else { balance -= bet; profit -= bet; losses++; msgEl.textContent = `패배! -${fmt(bet)}원`; msgEl.className = 'result-msg result-lose'; }
-
-      logs.unshift({ won, label: result === 'heads' ? '앞면 👑' : '뒷면 🌙', bet, balance, choiceLabel: choice === 'heads' ? '앞면' : '뒷면' });
-      if (logs.length > 20) logs.pop();
-      renderLog(); updateStats();
-
-      if (balance <= 0) {
-        setTimeout(() => {
-          document.getElementById('result-msg').textContent = '파산했습니다! 게임을 초기화합니다.';
-          document.getElementById('result-msg').className = 'result-msg result-lose';
-          setTimeout(resetGame, 1800);
-        }, 400);
-      } else { document.getElementById('flip-btn').disabled = false; }
-      flipping = false;
-    }, 650);
+  function isBetValid(game) {
+    const bet = getBet(game);
+    return bet >= 1 && !(balance > 0 && bet > balance);
   }
-
+ 
+  function refreshReady() {
+    coinCheckReady(); snailCheckReady(); oeCheckReady(); slotCheckReady();
+  }
+ 
+  function recordResult(won, bet, prize, label) {
+    gameCount++;
+    if (won) { balance += prize; profit += prize; wins++; }
+    else      { balance -= bet;  profit -= bet;  losses++; }
+    logs.unshift({ won, bet, prize: won ? prize : bet, label, balance, num: gameCount });
+    if (logs.length > 100) logs.pop();
+    renderLog(); updateStats();
+  }
+ 
   function renderLog() {
     const list = document.getElementById('log-list');
-    if (!logs.length) { list.innerHTML = '<div style="font-size:13px;color:#888;padding:6px 8px;">아직 게임 기록이 없어요.</div>'; return; }
+    document.getElementById('log-title').textContent = `게임 기록 (${logs.length}판)`;
+    if (!logs.length) { list.innerHTML = '<div class="log-empty">아직 게임 기록이 없어요.</div>'; return; }
     list.innerHTML = logs.map(l => `
       <div class="log-item ${l.won ? 'log-win' : 'log-lose'}">
-        <span>${l.choiceLabel} → ${l.label}</span>
+        <div class="log-left"><div class="log-num">#${l.num}</div><div>${l.label}</div></div>
         <div class="log-right">
-          <span style="color:${l.won ? '#0F6E56' : '#993C1D'};font-weight:500;">${l.won ? '+' : '-'}${fmt(l.bet)}</span>
-          <span style="color:#888;">${fmt(l.balance)}원</span>
+          <div class="log-amount" style="color:${l.won?'#0F6E56':'#993C1D'};">${l.won?'+':'-'}${fmt(l.prize)}원</div>
+          <div class="log-balance" style="color:${l.balance<0?'#993C1D':'#888'};">잔액 ${fmt(l.balance)}원</div>
         </div>
       </div>`).join('');
   }
-
-  function resetGame() {
-    balance = 1000; wins = 0; losses = 0; profit = 0; choice = null; logs.length = 0;
-    ['btn-heads','btn-tails'].forEach(id => {
-      const b = document.getElementById(id);
-      b.style.background = ''; b.style.borderColor = ''; b.style.color = '';
-    });
-    document.getElementById('flip-btn').disabled = true;
-    document.getElementById('coin').textContent = '🪙';
-    document.getElementById('result-msg').textContent = '';
-    document.getElementById('bet-amount').value = 100;
-    renderLog(); updateStats();
+ 
+  function clearLog() {
+    if (!logs.length) return;
+    if (confirm('게임 기록을 모두 지울까요?')) { logs.length = 0; gameCount = 0; renderLog(); }
   }
-
+ 
+  function setBet(game, ratio) {
+    const base = balance > 0 ? balance : 100;
+    document.getElementById(game + '-bet').value = Math.max(1, Math.floor(base * ratio));
+    validateBet(game);
+  }
+ 
+  // ── 메뉴 ──
+  const GAMES = ['coin','snail','oddeven','slot'];
+  const GAME_TITLES = { coin:'🪙 동전 던지기', snail:'🐌 달팽이 게임', oddeven:'🎲 홀짝 게임', slot:'🎰 슬롯머신' };
+  function toggleMenu() { document.getElementById('dropdown').classList.toggle('open'); }
+  document.addEventListener('click', e => {
+    if (!document.getElementById('menu-btn').contains(e.target))
+      document.getElementById('dropdown').classList.remove('open');
+  });
+  function switchGame(game) {
+    GAMES.forEach(g => {
+      const id = g === 'oddeven' ? 'oddeven' : g;
+      document.getElementById(id + '-game').style.display = g === game ? 'block' : 'none';
+      document.getElementById('menu-' + (g === 'oddeven' ? 'oddeven' : g)).className =
+        'dropdown-item' + (g === game ? ' active' : '');
+    });
+    document.getElementById('header-title').textContent = GAME_TITLES[game];
+    document.getElementById('dropdown').classList.remove('open');
+  }
+ 
+  // ── 공통 버튼 스타일 ──
+  function setBtn(id, on) {
+    const b = document.getElementById(id);
+    if (!b) return;
+    b.style.background   = on ? '#378ADD' : '#fff';
+    b.style.borderColor  = on ? '#185FA5' : '#bbb';
+    b.style.color        = on ? '#fff'    : '#333';
+  }
+  function setMultBtn(prefix, config, idx) {
+    config.forEach((_, i) => {
+      const b = document.getElementById(prefix + i), on = i === idx;
+      b.style.background  = on ? '#378ADD' : '#fff';
+      b.style.borderColor = on ? '#185FA5' : '#bbb';
+      b.style.color       = on ? '#fff'    : '#333';
+      b.querySelector('.prob').style.color = on ? '#B5D4F4' : '';
+    });
+  }
+ 
+  // ══════════════════════════════
+  // 동전 게임
+  // ══════════════════════════════
+  const COIN_MULT = [
+    {mult:1, prob:0.49, label:'1배',  probLabel:'49%'},
+    {mult:2, prob:0.45, label:'2배',  probLabel:'45%'},
+    {mult:3, prob:0.38, label:'3배',  probLabel:'38%'},
+    {mult:5, prob:0.28, label:'5배',  probLabel:'28%'},
+    {mult:10,prob:0.18, label:'10배', probLabel:'18%'},
+  ];
+  let coinChoice=null, coinMult=null, coinFlipping=false;
+ 
+  function buildCoinBtns() {
+    document.getElementById('coin-mult-btns').innerHTML = COIN_MULT.map((c,i)=>`
+      <button class="mult-btn" id="coin-mb-${i}" onclick="coinSelectMult(${i})">
+        <span>${c.label}</span><span class="prob">${c.probLabel}</span>
+      </button>`).join('');
+  }
+  function coinSelectMult(idx) {
+    coinMult = COIN_MULT[idx]; setMultBtn('coin-mb-', COIN_MULT, idx);
+    coinUpdateInfo(); coinCheckReady();
+  }
+  function coinSelectChoice(c) {
+    coinChoice = c;
+    setBtn('btn-heads', c==='heads'); setBtn('btn-tails', c==='tails');
+    coinCheckReady();
+  }
+  function coinCheckReady() {
+    document.getElementById('coin-flip-btn').disabled = !(coinChoice && coinMult && isBetValid('coin'));
+  }
+  function coinUpdateInfo() {
+    const bet = getBet('coin');
+    document.getElementById('coin-cur-mult').textContent  = coinMult ? coinMult.label    : '-';
+    document.getElementById('coin-cur-prob').textContent  = coinMult ? coinMult.probLabel : '-';
+    document.getElementById('coin-cur-prize').textContent = (coinMult && bet>0) ? '+'+fmt(bet*coinMult.mult)+'원' : '-';
+  }
+  function coinFlip() {
+    if (coinFlipping || !coinChoice || !coinMult || !isBetValid('coin')) return;
+    const bet = getBet('coin');
+    coinFlipping = true;
+    document.getElementById('coin-flip-btn').disabled = true;
+    const coin = document.getElementById('coin');
+    coin.className = 'coin flipping'; coin.textContent = '🪙';
+    document.getElementById('coin-result-msg').textContent = '';
+    setTimeout(() => {
+      const won = Math.random() < coinMult.prob;
+      coin.className = 'coin';
+      coin.textContent = won ? (coinChoice==='heads'?'👑':'🌙') : (coinChoice==='heads'?'🌙':'👑');
+      const prize = bet * coinMult.mult;
+      const msg = document.getElementById('coin-result-msg');
+      msg.textContent = won ? `승리! +${fmt(prize)}원 (${coinMult.label})` : `패배! -${fmt(bet)}원`;
+      msg.className = 'result-msg ' + (won ? 'result-win' : 'result-lose');
+      recordResult(won, bet, prize, `🪙 ${coinChoice==='heads'?'앞면 👑':'뒷면 🌙'} · ${coinMult.label}`);
+      coinUpdateInfo(); coinFlipping = false;
+    }, 650);
+  }
+ 
+  // ══════════════════════════════
+  // 달팽이 게임
+  // ══════════════════════════════
+  const SNAIL_MULT = [
+    {mult:1, prob:0.47, label:'1배',  probLabel:'47%'},
+    {mult:2, prob:0.42, label:'2배',  probLabel:'42%'},
+    {mult:3, prob:0.35, label:'3배',  probLabel:'35%'},
+    {mult:5, prob:0.25, label:'5배',  probLabel:'25%'},
+    {mult:10,prob:0.15, label:'10배', probLabel:'15%'},
+  ];
+  let snailDir=null, snailMult=null, snailRunning=false;
+ 
+  function buildSnailBtns() {
+    document.getElementById('snail-mult-btns').innerHTML = SNAIL_MULT.map((c,i)=>`
+      <button class="mult-btn" id="snail-mb-${i}" onclick="snailSelectMult(${i})">
+        <span>${c.label}</span><span class="prob">${c.probLabel}</span>
+      </button>`).join('');
+  }
+  function snailSelectMult(idx) {
+    snailMult = SNAIL_MULT[idx]; setMultBtn('snail-mb-', SNAIL_MULT, idx);
+    snailUpdateInfo(); snailCheckReady();
+  }
+  function snailSelectDir(d) {
+    snailDir = d;
+    setBtn('btn-left', d==='left'); setBtn('btn-right', d==='right');
+    snailCheckReady();
+  }
+  function snailCheckReady() {
+    document.getElementById('snail-go-btn').disabled = !(snailDir && snailMult && isBetValid('snail'));
+  }
+  function snailUpdateInfo() {
+    const bet = getBet('snail');
+    document.getElementById('snail-cur-mult').textContent  = snailMult ? snailMult.label    : '-';
+    document.getElementById('snail-cur-prob').textContent  = snailMult ? snailMult.probLabel : '-';
+    document.getElementById('snail-cur-prize').textContent = (snailMult && bet>0) ? '+'+fmt(bet*snailMult.mult)+'원' : '-';
+  }
+  function snailGo() {
+    if (snailRunning || !snailDir || !snailMult || !isBetValid('snail')) return;
+    const bet = getBet('snail');
+    snailRunning = true;
+    document.getElementById('snail-go-btn').disabled = true;
+    document.getElementById('snail-go-btn').textContent = '달리는 중...';
+    document.getElementById('snail-result-msg').textContent = '';
+    const snailEl = document.getElementById('snail');
+    const trackW  = document.getElementById('snail-track').offsetWidth;
+    snailEl.style.transition = 'none';
+    snailEl.style.left = 'calc(50% - 16px)';
+    snailEl.style.transform = 'translateY(-50%) scaleX(1)';
+    setTimeout(() => {
+      const won = Math.random() < snailMult.prob;
+      const moveDir = won ? snailDir : (snailDir==='left'?'right':'left');
+      snailEl.style.transition = 'left 1.2s cubic-bezier(0.25,0.1,0.25,1)';
+      snailEl.style.left = moveDir==='right' ? (trackW-48)+'px' : '4px';
+      snailEl.style.transform = moveDir==='right' ? 'translateY(-50%) scaleX(1)' : 'translateY(-50%) scaleX(-1)';
+      setTimeout(() => {
+        const prize = bet * snailMult.mult;
+        const msg = document.getElementById('snail-result-msg');
+        msg.textContent = won ? `승리! +${fmt(prize)}원 (${snailMult.label})` : `패배! -${fmt(bet)}원`;
+        msg.className = 'result-msg ' + (won?'result-win':'result-lose');
+        recordResult(won, bet, prize, `🐌 ${snailDir==='left'?'← 왼쪽':'오른쪽 →'} · ${snailMult.label}`);
+        snailUpdateInfo();
+        setTimeout(() => {
+          snailEl.style.transition = 'left 0.5s ease';
+          snailEl.style.left = 'calc(50% - 16px)';
+          snailEl.style.transform = 'translateY(-50%) scaleX(1)';
+          setTimeout(() => {
+            document.getElementById('snail-go-btn').disabled = false;
+            document.getElementById('snail-go-btn').textContent = '출발!';
+            snailRunning = false;
+          }, 500);
+        }, 800);
+      }, 1300);
+    }, 50);
+  }
+ 
+  // ══════════════════════════════
+  // 홀짝 게임
+  // ══════════════════════════════
+  const OE_MULT = [
+    {mult:1, prob:0.49, label:'1배',  probLabel:'49%'},
+    {mult:2, prob:0.45, label:'2배',  probLabel:'45%'},
+    {mult:3, prob:0.38, label:'3배',  probLabel:'38%'},
+    {mult:5, prob:0.28, label:'5배',  probLabel:'28%'},
+    {mult:10,prob:0.18, label:'10배', probLabel:'18%'},
+  ];
+  const DICE_FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+  let oeChoice=null, oeMult=null, oeRolling=false;
+ 
+  function buildOEBtns() {
+    document.getElementById('oe-mult-btns').innerHTML = OE_MULT.map((c,i)=>`
+      <button class="mult-btn" id="oe-mb-${i}" onclick="oeSelectMult(${i})">
+        <span>${c.label}</span><span class="prob">${c.probLabel}</span>
+      </button>`).join('');
+  }
+  function oeSelectMult(idx) {
+    oeMult = OE_MULT[idx]; setMultBtn('oe-mb-', OE_MULT, idx);
+    oeUpdateInfo(); oeCheckReady();
+  }
+  function oeSelect(c) {
+    oeChoice = c;
+    setBtn('btn-odd', c==='odd'); setBtn('btn-even', c==='even');
+    oeCheckReady();
+  }
+  function oeCheckReady() {
+    document.getElementById('oe-roll-btn').disabled = !(oeChoice && oeMult && isBetValid('oe'));
+  }
+  function oeUpdateInfo() {
+    const bet = getBet('oe');
+    document.getElementById('oe-cur-mult').textContent  = oeMult ? oeMult.label    : '-';
+    document.getElementById('oe-cur-prob').textContent  = oeMult ? oeMult.probLabel : '-';
+    document.getElementById('oe-cur-prize').textContent = (oeMult && bet>0) ? '+'+fmt(bet*oeMult.mult)+'원' : '-';
+  }
+  function oeRoll() {
+    if (oeRolling || !oeChoice || !oeMult || !isBetValid('oe')) return;
+    const bet = getBet('oe');
+    oeRolling = true;
+    document.getElementById('oe-roll-btn').disabled = true;
+    const diceEl = document.getElementById('dice');
+    diceEl.className = 'dice rolling';
+    document.getElementById('oddeven-result-msg').textContent = '';
+ 
+    // 주사위 애니메이션
+    let ticker = setInterval(() => {
+      diceEl.textContent = DICE_FACES[Math.floor(Math.random()*6)];
+    }, 80);
+ 
+    setTimeout(() => {
+      clearInterval(ticker);
+      diceEl.className = 'dice';
+      const won = Math.random() < oeMult.prob;
+      // 결과에 맞는 숫자 선택
+      const pool = oeChoice==='odd' ? [1,3,5] : [2,4,6];
+      const wrongPool = oeChoice==='odd' ? [2,4,6] : [1,3,5];
+      const num = won
+        ? pool[Math.floor(Math.random()*pool.length)]
+        : wrongPool[Math.floor(Math.random()*wrongPool.length)];
+      diceEl.textContent = DICE_FACES[num-1];
+ 
+      const prize = bet * oeMult.mult;
+      const msg = document.getElementById('oddeven-result-msg');
+      msg.textContent = won
+        ? `${num} 나옴! 승리! +${fmt(prize)}원 (${oeMult.label})`
+        : `${num} 나옴! 패배! -${fmt(bet)}원`;
+      msg.className = 'result-msg ' + (won?'result-win':'result-lose');
+      recordResult(won, bet, prize, `🎲 ${oeChoice==='odd'?'홀':'짝'} (${num}) · ${oeMult.label}`);
+      oeUpdateInfo();
+      document.getElementById('oe-roll-btn').disabled = false;
+      oeRolling = false;
+    }, 800);
+  }
+ 
+  // ══════════════════════════════
+  // 슬롯머신
+  // ══════════════════════════════
+  const SYMBOLS  = ['🍒','🍋','🍊','🍇','💎','7️⃣'];
+  const PAYOUTS  = {'🍒':2,'🍋':3,'🍊':5,'🍇':10,'💎':20,'7️⃣':50};
+  // 심볼별 가중치 (희귀할수록 낮음)
+  const WEIGHTS  = [30, 25, 20, 15, 7, 3]; // 합계 100
+  let slotSpinning = false;
+ 
+  function weightedRandom() {
+    const total = WEIGHTS.reduce((a,b)=>a+b,0);
+    let r = Math.random()*total;
+    for (let i=0; i<WEIGHTS.length; i++) { r-=WEIGHTS[i]; if(r<=0) return SYMBOLS[i]; }
+    return SYMBOLS[0];
+  }
+ 
+  function slotCheckReady() {
+    document.getElementById('slot-spin-btn').disabled = !isBetValid('slot') || slotSpinning;
+  }
+ 
+  function slotSpin() {
+    if (slotSpinning || !isBetValid('slot')) return;
+    const bet = getBet('slot');
+    slotSpinning = true;
+    slotCheckReady();
+    document.getElementById('slot-result-msg').textContent = '';
+ 
+    const reels = [0,1,2].map(i => document.getElementById('reel'+i));
+    reels.forEach(r => r.classList.add('spinning'));
+ 
+    // 결과 미리 결정
+    const results = [weightedRandom(), weightedRandom(), weightedRandom()];
+ 
+    // 릴을 순서대로 멈춤
+    [0,1,2].forEach((i, idx) => {
+      setTimeout(() => {
+        reels[i].classList.remove('spinning');
+        reels[i].textContent = results[i];
+ 
+        if (idx === 2) {
+          // 모두 멈춘 후 결과 처리
+          setTimeout(() => {
+            const allSame = results[0]===results[1] && results[1]===results[2];
+            const msg = document.getElementById('slot-result-msg');
+            if (allSame) {
+              const mult = PAYOUTS[results[0]];
+              const prize = bet * mult;
+              msg.textContent = `${results[0]}${results[1]}${results[2]} 대박! +${fmt(prize)}원 (×${mult})`;
+              msg.className = 'result-msg result-win';
+              recordResult(true, bet, prize, `🎰 ${results.join('')} ×${mult}`);
+            } else {
+              msg.textContent = `아쉽! -${fmt(bet)}원`;
+              msg.className = 'result-msg result-lose';
+              recordResult(false, bet, 0, `🎰 ${results.join('')} 꽝`);
+            }
+            slotSpinning = false;
+            slotCheckReady();
+          }, 300);
+        }
+      }, 500 + idx*400);
+    });
+  }
+ 
+  // ── 초기화 ──
+  buildCoinBtns(); buildSnailBtns(); buildOEBtns();
   updateStats();
 </script>
 </body>
