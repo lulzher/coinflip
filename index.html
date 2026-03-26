@@ -8,8 +8,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 0 1rem 4rem; }
     .game-wrap { width: 100%; max-width: 480px; }
- 
-    /* 헤더 */
     .header { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 0 1rem; border-bottom: 1px solid #ddd; margin-bottom: 1.5rem; }
     .header-title { font-size: 16px; font-weight: 500; color: #111; }
     .menu-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; flex-direction: column; gap: 5px; }
@@ -19,12 +17,15 @@
     .dropdown-item { padding: 12px 16px; font-size: 14px; cursor: pointer; color: #333; display: flex; align-items: center; gap: 8px; }
     .dropdown-item:hover { background: #f5f5f5; }
     .dropdown-item.active { font-weight: 500; color: #378ADD; }
- 
-    /* 공통 */
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
     .stat-card { background: #ebebeb; border-radius: 8px; padding: 0.75rem 1rem; text-align: center; }
     .stat-label { font-size: 12px; color: #888; margin-bottom: 4px; }
     .stat-value { font-size: 20px; font-weight: 500; color: #111; }
+ 
+    /* 충전 필요 배너 */
+    .charge-banner { display: none; background: #FAECE7; border: 1px solid #F0997B; border-radius: 8px; padding: 10px 14px; text-align: center; font-size: 13px; color: #993C1D; font-weight: 500; margin-bottom: 1rem; }
+    .charge-banner.show { display: block; }
+ 
     .info-bar { display: flex; justify-content: center; gap: 16px; font-size: 13px; color: #888; background: #ebebeb; border-radius: 8px; padding: 8px 12px; text-align: center; }
     .info-bar span { font-weight: 500; color: #111; }
     .divider { border: none; border-top: 1px solid #ddd; margin: 1rem 0; }
@@ -51,8 +52,6 @@
     .choice-btns { display: flex; gap: 8px; }
     .choice-btn { padding: 10px 22px; border-radius: 8px; border: 2px solid #bbb; background: #fff; color: #333; cursor: pointer; font-size: 14px; font-weight: 500; }
     .choice-btn:hover { background: #f0f0f0; }
- 
-    /* 로그 */
     .log-area { margin-top: 2rem; }
     .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .log-title { font-size: 13px; color: #888; }
@@ -104,14 +103,13 @@
       75%  { transform: rotate(10deg) scale(0.9); }
       100% { transform: rotate(0deg) scale(1); }
     }
-    .dice-faces { display: flex; gap: 6px; flex-wrap: wrap; }
  
     /* 슬롯 */
     #slot-game { display: none; }
     .slot-area { margin: 1.5rem 0; }
     .slot-machine { background: #222; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
     .reels { display: flex; gap: 8px; }
-    .reel { width: 80px; height: 90px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 44px; overflow: hidden; position: relative; }
+    .reel { width: 80px; height: 90px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 44px; }
     .reel.spinning { animation: reelSpin 0.1s linear infinite; }
     @keyframes reelSpin {
       0%   { transform: translateY(0); }
@@ -126,7 +124,7 @@
     .slot-spin-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; background: #FFD700; color: #111; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 4px; transition: opacity 0.15s; }
     .slot-spin-btn:disabled { opacity: 0.35; cursor: not-allowed; }
     .slot-spin-btn:not(:disabled):hover { opacity: 0.88; }
-    .slot-bet-area { display: flex; flex-direction: column; gap: 12px; margin-top: 1rem; }
+    .slot-bet-area { display: flex; flex-direction: column; gap: 12px; }
   </style>
 </head>
 <body>
@@ -146,13 +144,15 @@
     </div>
   </div>
  
-  <!-- 공통 스탯 -->
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">잔액</div><div class="stat-value" id="balance">1,000</div></div>
     <div class="stat-card"><div class="stat-label">총 손익</div><div class="stat-value" id="profit" style="color:#888;">+0</div></div>
     <div class="stat-card"><div class="stat-label">승리</div><div class="stat-value" id="wins" style="color:#0F6E56;">0</div></div>
     <div class="stat-card"><div class="stat-label">패배</div><div class="stat-value" id="losses" style="color:#993C1D;">0</div></div>
   </div>
+ 
+  <!-- 충전 필요 배너 -->
+  <div class="charge-banner" id="charge-banner">💸 잔액이 0원이에요. 충전이 필요해요!</div>
  
   <!-- 동전 게임 -->
   <div id="coin-game">
@@ -209,7 +209,7 @@
       <div class="bet-row">
         <label>방향</label>
         <div class="dir-btns">
-          <button class="dir-btn" id="btn-left" onclick="snailSelectDir('left')">← 왼쪽</button>
+          <button class="dir-btn" id="btn-left"  onclick="snailSelectDir('left')">← 왼쪽</button>
           <button class="dir-btn" id="btn-right" onclick="snailSelectDir('right')">오른쪽 →</button>
         </div>
       </div>
@@ -313,7 +313,6 @@
     </div>
   </div>
  
-  <!-- 공통 로그 -->
   <div class="log-area">
     <div class="log-header">
       <div class="log-title" id="log-title">게임 기록</div>
@@ -329,27 +328,45 @@
   let balance = 1000, wins = 0, losses = 0, profit = 0, gameCount = 0;
   const logs = [];
  
-  function fmt(n) { return n < 0 ? '-' + Math.abs(n).toLocaleString() : n.toLocaleString(); }
+  function fmt(n) { return n.toLocaleString(); }
  
   function updateStats() {
-    const balEl = document.getElementById('balance');
-    balEl.textContent = fmt(balance);
-    balEl.style.color = balance < 0 ? '#993C1D' : '#111';
+    document.getElementById('balance').textContent = fmt(balance);
     const pEl = document.getElementById('profit');
     pEl.textContent = (profit >= 0 ? '+' : '') + fmt(profit);
     pEl.style.color = profit > 0 ? '#0F6E56' : profit < 0 ? '#993C1D' : '#888';
     document.getElementById('wins').textContent = wins;
     document.getElementById('losses').textContent = losses;
+ 
+    // 0원이면 충전 배너 표시 + 베팅액 0으로
+    const broke = balance <= 0;
+    document.getElementById('charge-banner').className = 'charge-banner' + (broke ? ' show' : '');
+    if (broke) {
+      ['coin','snail','oe','slot'].forEach(g => {
+        const input = document.getElementById(g + '-bet');
+        if (input) { input.value = 0; input.disabled = true; }
+      });
+    } else {
+      ['coin','snail','oe','slot'].forEach(g => {
+        const input = document.getElementById(g + '-bet');
+        if (input) input.disabled = false;
+      });
+    }
     ['coin','snail','oe','slot'].forEach(g => validateBet(g));
   }
  
   function validateBet(game) {
     const input = document.getElementById(game + '-bet');
     const warn  = document.getElementById(game + '-bet-warn');
-    if (!input) return true;
+    if (!input || !warn) return true;
+    if (balance <= 0) {
+      input.classList.remove('over');
+      warn.textContent = '';
+      refreshReady(); return false;
+    }
     let val = parseInt(input.value);
     if (isNaN(val) || val < 1) { input.value = 1; val = 1; }
-    if (balance > 0 && val > balance) {
+    if (val > balance) {
       input.classList.add('over');
       warn.textContent = `잔액(${fmt(balance)}원)을 초과할 수 없어요`;
       refreshReady(); return false;
@@ -361,11 +378,12 @@
  
   function getBet(game) {
     const v = parseInt(document.getElementById(game + '-bet').value);
-    return isNaN(v) ? 1 : v;
+    return isNaN(v) ? 0 : v;
   }
   function isBetValid(game) {
+    if (balance <= 0) return false;
     const bet = getBet(game);
-    return bet >= 1 && !(balance > 0 && bet > balance);
+    return bet >= 1 && bet <= balance;
   }
  
   function refreshReady() {
@@ -374,8 +392,12 @@
  
   function recordResult(won, bet, prize, label) {
     gameCount++;
-    if (won) { balance += prize; profit += prize; wins++; }
-    else      { balance -= bet;  profit -= bet;  losses++; }
+    if (won) {
+      balance += prize; profit += prize; wins++;
+    } else {
+      balance = Math.max(0, balance - bet); // 0원 이하로 안 내려감
+      profit -= bet; losses++;
+    }
     logs.unshift({ won, bet, prize: won ? prize : bet, label, balance, num: gameCount });
     if (logs.length > 100) logs.pop();
     renderLog(); updateStats();
@@ -390,7 +412,7 @@
         <div class="log-left"><div class="log-num">#${l.num}</div><div>${l.label}</div></div>
         <div class="log-right">
           <div class="log-amount" style="color:${l.won?'#0F6E56':'#993C1D'};">${l.won?'+':'-'}${fmt(l.prize)}원</div>
-          <div class="log-balance" style="color:${l.balance<0?'#993C1D':'#888'};">잔액 ${fmt(l.balance)}원</div>
+          <div class="log-balance" style="color:#888;">잔액 ${fmt(l.balance)}원</div>
         </div>
       </div>`).join('');
   }
@@ -401,41 +423,37 @@
   }
  
   function setBet(game, ratio) {
-    const base = balance > 0 ? balance : 100;
-    document.getElementById(game + '-bet').value = Math.max(1, Math.floor(base * ratio));
+    if (balance <= 0) return;
+    document.getElementById(game + '-bet').value = Math.max(1, Math.floor(balance * ratio));
     validateBet(game);
   }
  
-  // ── 메뉴 ──
-  const GAMES = ['coin','snail','oddeven','slot'];
-  const GAME_TITLES = { coin:'🪙 동전 던지기', snail:'🐌 달팽이 게임', oddeven:'🎲 홀짝 게임', slot:'🎰 슬롯머신' };
   function toggleMenu() { document.getElementById('dropdown').classList.toggle('open'); }
   document.addEventListener('click', e => {
     if (!document.getElementById('menu-btn').contains(e.target))
       document.getElementById('dropdown').classList.remove('open');
   });
+ 
+  const GAMES = ['coin','snail','oddeven','slot'];
+  const GAME_TITLES = { coin:'🪙 동전 던지기', snail:'🐌 달팽이 게임', oddeven:'🎲 홀짝 게임', slot:'🎰 슬롯머신' };
   function switchGame(game) {
     GAMES.forEach(g => {
-      const id = g === 'oddeven' ? 'oddeven' : g;
-      document.getElementById(id + '-game').style.display = g === game ? 'block' : 'none';
-      document.getElementById('menu-' + (g === 'oddeven' ? 'oddeven' : g)).className =
-        'dropdown-item' + (g === game ? ' active' : '');
+      document.getElementById(g+'-game').style.display = g===game ? 'block' : 'none';
+      document.getElementById('menu-'+g).className = 'dropdown-item'+(g===game?' active':'');
     });
     document.getElementById('header-title').textContent = GAME_TITLES[game];
     document.getElementById('dropdown').classList.remove('open');
   }
  
-  // ── 공통 버튼 스타일 ──
   function setBtn(id, on) {
-    const b = document.getElementById(id);
-    if (!b) return;
-    b.style.background   = on ? '#378ADD' : '#fff';
-    b.style.borderColor  = on ? '#185FA5' : '#bbb';
-    b.style.color        = on ? '#fff'    : '#333';
+    const b = document.getElementById(id); if (!b) return;
+    b.style.background  = on ? '#378ADD' : '#fff';
+    b.style.borderColor = on ? '#185FA5' : '#bbb';
+    b.style.color       = on ? '#fff'    : '#333';
   }
   function setMultBtn(prefix, config, idx) {
     config.forEach((_, i) => {
-      const b = document.getElementById(prefix + i), on = i === idx;
+      const b = document.getElementById(prefix+i), on = i===idx;
       b.style.background  = on ? '#378ADD' : '#fff';
       b.style.borderColor = on ? '#185FA5' : '#bbb';
       b.style.color       = on ? '#fff'    : '#333';
@@ -443,278 +461,170 @@
     });
   }
  
-  // ══════════════════════════════
-  // 동전 게임
-  // ══════════════════════════════
+  // ══ 동전 ══
   const COIN_MULT = [
-    {mult:1, prob:0.49, label:'1배',  probLabel:'49%'},
-    {mult:2, prob:0.45, label:'2배',  probLabel:'45%'},
-    {mult:3, prob:0.38, label:'3배',  probLabel:'38%'},
-    {mult:5, prob:0.28, label:'5배',  probLabel:'28%'},
-    {mult:10,prob:0.18, label:'10배', probLabel:'18%'},
+    {mult:1,prob:0.49,label:'1배',probLabel:'49%'},
+    {mult:2,prob:0.45,label:'2배',probLabel:'45%'},
+    {mult:3,prob:0.38,label:'3배',probLabel:'38%'},
+    {mult:5,prob:0.28,label:'5배',probLabel:'28%'},
+    {mult:10,prob:0.18,label:'10배',probLabel:'18%'},
   ];
   let coinChoice=null, coinMult=null, coinFlipping=false;
- 
   function buildCoinBtns() {
-    document.getElementById('coin-mult-btns').innerHTML = COIN_MULT.map((c,i)=>`
-      <button class="mult-btn" id="coin-mb-${i}" onclick="coinSelectMult(${i})">
-        <span>${c.label}</span><span class="prob">${c.probLabel}</span>
-      </button>`).join('');
+    document.getElementById('coin-mult-btns').innerHTML = COIN_MULT.map((c,i)=>
+      `<button class="mult-btn" id="coin-mb-${i}" onclick="coinSelectMult(${i})"><span>${c.label}</span><span class="prob">${c.probLabel}</span></button>`).join('');
   }
-  function coinSelectMult(idx) {
-    coinMult = COIN_MULT[idx]; setMultBtn('coin-mb-', COIN_MULT, idx);
-    coinUpdateInfo(); coinCheckReady();
-  }
-  function coinSelectChoice(c) {
-    coinChoice = c;
-    setBtn('btn-heads', c==='heads'); setBtn('btn-tails', c==='tails');
-    coinCheckReady();
-  }
-  function coinCheckReady() {
-    document.getElementById('coin-flip-btn').disabled = !(coinChoice && coinMult && isBetValid('coin'));
-  }
-  function coinUpdateInfo() {
-    const bet = getBet('coin');
-    document.getElementById('coin-cur-mult').textContent  = coinMult ? coinMult.label    : '-';
-    document.getElementById('coin-cur-prob').textContent  = coinMult ? coinMult.probLabel : '-';
-    document.getElementById('coin-cur-prize').textContent = (coinMult && bet>0) ? '+'+fmt(bet*coinMult.mult)+'원' : '-';
-  }
+  function coinSelectMult(idx) { coinMult=COIN_MULT[idx]; setMultBtn('coin-mb-',COIN_MULT,idx); coinCheckReady(); }
+  function coinSelectChoice(c) { coinChoice=c; setBtn('btn-heads',c==='heads'); setBtn('btn-tails',c==='tails'); coinCheckReady(); }
+  function coinCheckReady() { document.getElementById('coin-flip-btn').disabled=!(coinChoice&&coinMult&&isBetValid('coin')); }
   function coinFlip() {
-    if (coinFlipping || !coinChoice || !coinMult || !isBetValid('coin')) return;
-    const bet = getBet('coin');
-    coinFlipping = true;
-    document.getElementById('coin-flip-btn').disabled = true;
-    const coin = document.getElementById('coin');
-    coin.className = 'coin flipping'; coin.textContent = '🪙';
-    document.getElementById('coin-result-msg').textContent = '';
-    setTimeout(() => {
-      const won = Math.random() < coinMult.prob;
-      coin.className = 'coin';
-      coin.textContent = won ? (coinChoice==='heads'?'👑':'🌙') : (coinChoice==='heads'?'🌙':'👑');
-      const prize = bet * coinMult.mult;
-      const msg = document.getElementById('coin-result-msg');
-      msg.textContent = won ? `승리! +${fmt(prize)}원 (${coinMult.label})` : `패배! -${fmt(bet)}원`;
-      msg.className = 'result-msg ' + (won ? 'result-win' : 'result-lose');
-      recordResult(won, bet, prize, `🪙 ${coinChoice==='heads'?'앞면 👑':'뒷면 🌙'} · ${coinMult.label}`);
-      coinUpdateInfo(); coinFlipping = false;
-    }, 650);
+    if (coinFlipping||!coinChoice||!coinMult||!isBetValid('coin')) return;
+    const bet=getBet('coin'); coinFlipping=true;
+    document.getElementById('coin-flip-btn').disabled=true;
+    const coin=document.getElementById('coin');
+    coin.className='coin flipping'; coin.textContent='🪙';
+    document.getElementById('coin-result-msg').textContent='';
+    setTimeout(()=>{
+      const won=Math.random()<coinMult.prob;
+      coin.className='coin';
+      coin.textContent=won?(coinChoice==='heads'?'👑':'🌙'):(coinChoice==='heads'?'🌙':'👑');
+      const prize=bet*coinMult.mult;
+      const msg=document.getElementById('coin-result-msg');
+      msg.textContent=won?`승리! +${fmt(prize)}원 (${coinMult.label})`:`패배! -${fmt(bet)}원`;
+      msg.className='result-msg '+(won?'result-win':'result-lose');
+      recordResult(won,bet,prize,`🪙 ${coinChoice==='heads'?'앞면 👑':'뒷면 🌙'} · ${coinMult.label}`);
+      coinFlipping=false;
+    },650);
   }
  
-  // ══════════════════════════════
-  // 달팽이 게임
-  // ══════════════════════════════
+  // ══ 달팽이 ══
   const SNAIL_MULT = [
-    {mult:1, prob:0.47, label:'1배',  probLabel:'47%'},
-    {mult:2, prob:0.42, label:'2배',  probLabel:'42%'},
-    {mult:3, prob:0.35, label:'3배',  probLabel:'35%'},
-    {mult:5, prob:0.25, label:'5배',  probLabel:'25%'},
-    {mult:10,prob:0.15, label:'10배', probLabel:'15%'},
+    {mult:1,prob:0.47,label:'1배',probLabel:'47%'},
+    {mult:2,prob:0.42,label:'2배',probLabel:'42%'},
+    {mult:3,prob:0.35,label:'3배',probLabel:'35%'},
+    {mult:5,prob:0.25,label:'5배',probLabel:'25%'},
+    {mult:10,prob:0.15,label:'10배',probLabel:'15%'},
   ];
   let snailDir=null, snailMult=null, snailRunning=false;
- 
   function buildSnailBtns() {
-    document.getElementById('snail-mult-btns').innerHTML = SNAIL_MULT.map((c,i)=>`
-      <button class="mult-btn" id="snail-mb-${i}" onclick="snailSelectMult(${i})">
-        <span>${c.label}</span><span class="prob">${c.probLabel}</span>
-      </button>`).join('');
+    document.getElementById('snail-mult-btns').innerHTML = SNAIL_MULT.map((c,i)=>
+      `<button class="mult-btn" id="snail-mb-${i}" onclick="snailSelectMult(${i})"><span>${c.label}</span><span class="prob">${c.probLabel}</span></button>`).join('');
   }
-  function snailSelectMult(idx) {
-    snailMult = SNAIL_MULT[idx]; setMultBtn('snail-mb-', SNAIL_MULT, idx);
-    snailUpdateInfo(); snailCheckReady();
-  }
-  function snailSelectDir(d) {
-    snailDir = d;
-    setBtn('btn-left', d==='left'); setBtn('btn-right', d==='right');
-    snailCheckReady();
-  }
-  function snailCheckReady() {
-    document.getElementById('snail-go-btn').disabled = !(snailDir && snailMult && isBetValid('snail'));
-  }
-  function snailUpdateInfo() {
-    const bet = getBet('snail');
-    document.getElementById('snail-cur-mult').textContent  = snailMult ? snailMult.label    : '-';
-    document.getElementById('snail-cur-prob').textContent  = snailMult ? snailMult.probLabel : '-';
-    document.getElementById('snail-cur-prize').textContent = (snailMult && bet>0) ? '+'+fmt(bet*snailMult.mult)+'원' : '-';
-  }
+  function snailSelectMult(idx) { snailMult=SNAIL_MULT[idx]; setMultBtn('snail-mb-',SNAIL_MULT,idx); snailCheckReady(); }
+  function snailSelectDir(d) { snailDir=d; setBtn('btn-left',d==='left'); setBtn('btn-right',d==='right'); snailCheckReady(); }
+  function snailCheckReady() { document.getElementById('snail-go-btn').disabled=!(snailDir&&snailMult&&isBetValid('snail')); }
   function snailGo() {
-    if (snailRunning || !snailDir || !snailMult || !isBetValid('snail')) return;
-    const bet = getBet('snail');
-    snailRunning = true;
-    document.getElementById('snail-go-btn').disabled = true;
-    document.getElementById('snail-go-btn').textContent = '달리는 중...';
-    document.getElementById('snail-result-msg').textContent = '';
-    const snailEl = document.getElementById('snail');
-    const trackW  = document.getElementById('snail-track').offsetWidth;
-    snailEl.style.transition = 'none';
-    snailEl.style.left = 'calc(50% - 16px)';
-    snailEl.style.transform = 'translateY(-50%) scaleX(1)';
-    setTimeout(() => {
-      const won = Math.random() < snailMult.prob;
-      const moveDir = won ? snailDir : (snailDir==='left'?'right':'left');
-      snailEl.style.transition = 'left 1.2s cubic-bezier(0.25,0.1,0.25,1)';
-      snailEl.style.left = moveDir==='right' ? (trackW-48)+'px' : '4px';
-      snailEl.style.transform = moveDir==='right' ? 'translateY(-50%) scaleX(1)' : 'translateY(-50%) scaleX(-1)';
-      setTimeout(() => {
-        const prize = bet * snailMult.mult;
-        const msg = document.getElementById('snail-result-msg');
-        msg.textContent = won ? `승리! +${fmt(prize)}원 (${snailMult.label})` : `패배! -${fmt(bet)}원`;
-        msg.className = 'result-msg ' + (won?'result-win':'result-lose');
-        recordResult(won, bet, prize, `🐌 ${snailDir==='left'?'← 왼쪽':'오른쪽 →'} · ${snailMult.label}`);
-        snailUpdateInfo();
-        setTimeout(() => {
-          snailEl.style.transition = 'left 0.5s ease';
-          snailEl.style.left = 'calc(50% - 16px)';
-          snailEl.style.transform = 'translateY(-50%) scaleX(1)';
-          setTimeout(() => {
-            document.getElementById('snail-go-btn').disabled = false;
-            document.getElementById('snail-go-btn').textContent = '출발!';
-            snailRunning = false;
-          }, 500);
-        }, 800);
-      }, 1300);
-    }, 50);
+    if (snailRunning||!snailDir||!snailMult||!isBetValid('snail')) return;
+    const bet=getBet('snail'); snailRunning=true;
+    document.getElementById('snail-go-btn').disabled=true;
+    document.getElementById('snail-go-btn').textContent='달리는 중...';
+    document.getElementById('snail-result-msg').textContent='';
+    const snailEl=document.getElementById('snail');
+    const trackW=document.getElementById('snail-track').offsetWidth;
+    snailEl.style.transition='none'; snailEl.style.left='calc(50% - 16px)'; snailEl.style.transform='translateY(-50%) scaleX(1)';
+    setTimeout(()=>{
+      const won=Math.random()<snailMult.prob;
+      const moveDir=won?snailDir:(snailDir==='left'?'right':'left');
+      snailEl.style.transition='left 1.2s cubic-bezier(0.25,0.1,0.25,1)';
+      snailEl.style.left=moveDir==='right'?(trackW-48)+'px':'4px';
+      snailEl.style.transform=moveDir==='right'?'translateY(-50%) scaleX(1)':'translateY(-50%) scaleX(-1)';
+      setTimeout(()=>{
+        const prize=bet*snailMult.mult;
+        const msg=document.getElementById('snail-result-msg');
+        msg.textContent=won?`승리! +${fmt(prize)}원 (${snailMult.label})`:`패배! -${fmt(bet)}원`;
+        msg.className='result-msg '+(won?'result-win':'result-lose');
+        recordResult(won,bet,prize,`🐌 ${snailDir==='left'?'← 왼쪽':'오른쪽 →'} · ${snailMult.label}`);
+        setTimeout(()=>{
+          snailEl.style.transition='left 0.5s ease'; snailEl.style.left='calc(50% - 16px)'; snailEl.style.transform='translateY(-50%) scaleX(1)';
+          setTimeout(()=>{ document.getElementById('snail-go-btn').disabled=false; document.getElementById('snail-go-btn').textContent='출발!'; snailRunning=false; },500);
+        },800);
+      },1300);
+    },50);
   }
  
-  // ══════════════════════════════
-  // 홀짝 게임
-  // ══════════════════════════════
+  // ══ 홀짝 ══
   const OE_MULT = [
-    {mult:1, prob:0.49, label:'1배',  probLabel:'49%'},
-    {mult:2, prob:0.45, label:'2배',  probLabel:'45%'},
-    {mult:3, prob:0.38, label:'3배',  probLabel:'38%'},
-    {mult:5, prob:0.28, label:'5배',  probLabel:'28%'},
-    {mult:10,prob:0.18, label:'10배', probLabel:'18%'},
+    {mult:1,prob:0.49,label:'1배',probLabel:'49%'},
+    {mult:2,prob:0.45,label:'2배',probLabel:'45%'},
+    {mult:3,prob:0.38,label:'3배',probLabel:'38%'},
+    {mult:5,prob:0.28,label:'5배',probLabel:'28%'},
+    {mult:10,prob:0.18,label:'10배',probLabel:'18%'},
   ];
-  const DICE_FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+  const DICE_FACES=['⚀','⚁','⚂','⚃','⚄','⚅'];
   let oeChoice=null, oeMult=null, oeRolling=false;
- 
   function buildOEBtns() {
-    document.getElementById('oe-mult-btns').innerHTML = OE_MULT.map((c,i)=>`
-      <button class="mult-btn" id="oe-mb-${i}" onclick="oeSelectMult(${i})">
-        <span>${c.label}</span><span class="prob">${c.probLabel}</span>
-      </button>`).join('');
+    document.getElementById('oe-mult-btns').innerHTML = OE_MULT.map((c,i)=>
+      `<button class="mult-btn" id="oe-mb-${i}" onclick="oeSelectMult(${i})"><span>${c.label}</span><span class="prob">${c.probLabel}</span></button>`).join('');
   }
-  function oeSelectMult(idx) {
-    oeMult = OE_MULT[idx]; setMultBtn('oe-mb-', OE_MULT, idx);
-    oeUpdateInfo(); oeCheckReady();
-  }
-  function oeSelect(c) {
-    oeChoice = c;
-    setBtn('btn-odd', c==='odd'); setBtn('btn-even', c==='even');
-    oeCheckReady();
-  }
-  function oeCheckReady() {
-    document.getElementById('oe-roll-btn').disabled = !(oeChoice && oeMult && isBetValid('oe'));
-  }
-  function oeUpdateInfo() {
-    const bet = getBet('oe');
-    document.getElementById('oe-cur-mult').textContent  = oeMult ? oeMult.label    : '-';
-    document.getElementById('oe-cur-prob').textContent  = oeMult ? oeMult.probLabel : '-';
-    document.getElementById('oe-cur-prize').textContent = (oeMult && bet>0) ? '+'+fmt(bet*oeMult.mult)+'원' : '-';
-  }
+  function oeSelectMult(idx) { oeMult=OE_MULT[idx]; setMultBtn('oe-mb-',OE_MULT,idx); oeCheckReady(); }
+  function oeSelect(c) { oeChoice=c; setBtn('btn-odd',c==='odd'); setBtn('btn-even',c==='even'); oeCheckReady(); }
+  function oeCheckReady() { document.getElementById('oe-roll-btn').disabled=!(oeChoice&&oeMult&&isBetValid('oe')); }
   function oeRoll() {
-    if (oeRolling || !oeChoice || !oeMult || !isBetValid('oe')) return;
-    const bet = getBet('oe');
-    oeRolling = true;
-    document.getElementById('oe-roll-btn').disabled = true;
-    const diceEl = document.getElementById('dice');
-    diceEl.className = 'dice rolling';
-    document.getElementById('oddeven-result-msg').textContent = '';
- 
-    // 주사위 애니메이션
-    let ticker = setInterval(() => {
-      diceEl.textContent = DICE_FACES[Math.floor(Math.random()*6)];
-    }, 80);
- 
-    setTimeout(() => {
+    if (oeRolling||!oeChoice||!oeMult||!isBetValid('oe')) return;
+    const bet=getBet('oe'); oeRolling=true;
+    document.getElementById('oe-roll-btn').disabled=true;
+    const diceEl=document.getElementById('dice');
+    document.getElementById('oddeven-result-msg').textContent='';
+    let ticker=setInterval(()=>{ diceEl.textContent=DICE_FACES[Math.floor(Math.random()*6)]; },80);
+    setTimeout(()=>{
       clearInterval(ticker);
-      diceEl.className = 'dice';
-      const won = Math.random() < oeMult.prob;
-      // 결과에 맞는 숫자 선택
-      const pool = oeChoice==='odd' ? [1,3,5] : [2,4,6];
-      const wrongPool = oeChoice==='odd' ? [2,4,6] : [1,3,5];
-      const num = won
-        ? pool[Math.floor(Math.random()*pool.length)]
-        : wrongPool[Math.floor(Math.random()*wrongPool.length)];
-      diceEl.textContent = DICE_FACES[num-1];
- 
-      const prize = bet * oeMult.mult;
-      const msg = document.getElementById('oddeven-result-msg');
-      msg.textContent = won
-        ? `${num} 나옴! 승리! +${fmt(prize)}원 (${oeMult.label})`
-        : `${num} 나옴! 패배! -${fmt(bet)}원`;
-      msg.className = 'result-msg ' + (won?'result-win':'result-lose');
-      recordResult(won, bet, prize, `🎲 ${oeChoice==='odd'?'홀':'짝'} (${num}) · ${oeMult.label}`);
-      oeUpdateInfo();
-      document.getElementById('oe-roll-btn').disabled = false;
-      oeRolling = false;
-    }, 800);
+      const won=Math.random()<oeMult.prob;
+      const pool=oeChoice==='odd'?[1,3,5]:[2,4,6];
+      const wrongPool=oeChoice==='odd'?[2,4,6]:[1,3,5];
+      const num=won?pool[Math.floor(Math.random()*pool.length)]:wrongPool[Math.floor(Math.random()*wrongPool.length)];
+      diceEl.textContent=DICE_FACES[num-1];
+      const prize=bet*oeMult.mult;
+      const msg=document.getElementById('oddeven-result-msg');
+      msg.textContent=won?`${num} 나옴! 승리! +${fmt(prize)}원 (${oeMult.label})`:`${num} 나옴! 패배! -${fmt(bet)}원`;
+      msg.className='result-msg '+(won?'result-win':'result-lose');
+      recordResult(won,bet,prize,`🎲 ${oeChoice==='odd'?'홀':'짝'} (${num}) · ${oeMult.label}`);
+      document.getElementById('oe-roll-btn').disabled=false;
+      oeRolling=false;
+    },800);
   }
  
-  // ══════════════════════════════
-  // 슬롯머신
-  // ══════════════════════════════
-  const SYMBOLS  = ['🍒','🍋','🍊','🍇','💎','7️⃣'];
-  const PAYOUTS  = {'🍒':2,'🍋':3,'🍊':5,'🍇':10,'💎':20,'7️⃣':50};
-  // 심볼별 가중치 (희귀할수록 낮음)
-  const WEIGHTS  = [30, 25, 20, 15, 7, 3]; // 합계 100
-  let slotSpinning = false;
- 
+  // ══ 슬롯 ══
+  const SYMBOLS=['🍒','🍋','🍊','🍇','💎','7️⃣'];
+  const PAYOUTS={'🍒':2,'🍋':3,'🍊':5,'🍇':10,'💎':20,'7️⃣':50};
+  const WEIGHTS=[30,25,20,15,7,3];
+  let slotSpinning=false;
   function weightedRandom() {
-    const total = WEIGHTS.reduce((a,b)=>a+b,0);
-    let r = Math.random()*total;
-    for (let i=0; i<WEIGHTS.length; i++) { r-=WEIGHTS[i]; if(r<=0) return SYMBOLS[i]; }
+    const total=WEIGHTS.reduce((a,b)=>a+b,0); let r=Math.random()*total;
+    for(let i=0;i<WEIGHTS.length;i++){r-=WEIGHTS[i];if(r<=0)return SYMBOLS[i];}
     return SYMBOLS[0];
   }
- 
-  function slotCheckReady() {
-    document.getElementById('slot-spin-btn').disabled = !isBetValid('slot') || slotSpinning;
-  }
- 
+  function slotCheckReady() { document.getElementById('slot-spin-btn').disabled=!isBetValid('slot')||slotSpinning; }
   function slotSpin() {
-    if (slotSpinning || !isBetValid('slot')) return;
-    const bet = getBet('slot');
-    slotSpinning = true;
-    slotCheckReady();
-    document.getElementById('slot-result-msg').textContent = '';
- 
-    const reels = [0,1,2].map(i => document.getElementById('reel'+i));
-    reels.forEach(r => r.classList.add('spinning'));
- 
-    // 결과 미리 결정
-    const results = [weightedRandom(), weightedRandom(), weightedRandom()];
- 
-    // 릴을 순서대로 멈춤
-    [0,1,2].forEach((i, idx) => {
-      setTimeout(() => {
-        reels[i].classList.remove('spinning');
-        reels[i].textContent = results[i];
- 
-        if (idx === 2) {
-          // 모두 멈춘 후 결과 처리
-          setTimeout(() => {
-            const allSame = results[0]===results[1] && results[1]===results[2];
-            const msg = document.getElementById('slot-result-msg');
-            if (allSame) {
-              const mult = PAYOUTS[results[0]];
-              const prize = bet * mult;
-              msg.textContent = `${results[0]}${results[1]}${results[2]} 대박! +${fmt(prize)}원 (×${mult})`;
-              msg.className = 'result-msg result-win';
-              recordResult(true, bet, prize, `🎰 ${results.join('')} ×${mult}`);
+    if(slotSpinning||!isBetValid('slot')) return;
+    const bet=getBet('slot'); slotSpinning=true; slotCheckReady();
+    document.getElementById('slot-result-msg').textContent='';
+    const reels=[0,1,2].map(i=>document.getElementById('reel'+i));
+    reels.forEach(r=>r.classList.add('spinning'));
+    const results=[weightedRandom(),weightedRandom(),weightedRandom()];
+    [0,1,2].forEach((i,idx)=>{
+      setTimeout(()=>{
+        reels[i].classList.remove('spinning'); reels[i].textContent=results[i];
+        if(idx===2){
+          setTimeout(()=>{
+            const allSame=results[0]===results[1]&&results[1]===results[2];
+            const msg=document.getElementById('slot-result-msg');
+            if(allSame){
+              const mult=PAYOUTS[results[0]], prize=bet*mult;
+              msg.textContent=`${results[0]}${results[1]}${results[2]} 대박! +${fmt(prize)}원 (×${mult})`;
+              msg.className='result-msg result-win';
+              recordResult(true,bet,prize,`🎰 ${results.join('')} ×${mult}`);
             } else {
-              msg.textContent = `아쉽! -${fmt(bet)}원`;
-              msg.className = 'result-msg result-lose';
-              recordResult(false, bet, 0, `🎰 ${results.join('')} 꽝`);
+              msg.textContent=`아쉽! -${fmt(bet)}원`;
+              msg.className='result-msg result-lose';
+              recordResult(false,bet,0,`🎰 ${results.join('')} 꽝`);
             }
-            slotSpinning = false;
-            slotCheckReady();
-          }, 300);
+            slotSpinning=false; slotCheckReady();
+          },300);
         }
-      }, 500 + idx*400);
+      },500+idx*400);
     });
   }
  
-  // ── 초기화 ──
   buildCoinBtns(); buildSnailBtns(); buildOEBtns();
   updateStats();
 </script>
