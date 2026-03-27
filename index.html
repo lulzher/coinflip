@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>미니 카지노</title>
   <style>
+    /* 기존 스타일 유지 */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 0 1rem 4rem; }
     .game-wrap { width: 100%; max-width: 480px; }
@@ -230,9 +231,31 @@
   </div>
 </div>
  
-<script>
-  const FEE = 0.93; // 수수료 7% → 상금의 93%만 지급
- 
+<!-- Firebase 연동 스크립트 (모듈 타입) -->
+<script type="module">
+  // 1. Firebase 라이브러리 불러오기 (CDN)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
+  // 2. 파이어베이스 설정
+  const firebaseConfig = {
+    apiKey: "AIzaSyBWEkYQqW0HF5jgklL3tELwLKyUxkmKh4Y",
+    authDomain: "bett-10c4f.firebaseapp.com",
+    projectId: "bett-10c4f",
+    storageBucket: "bett-10c4f.firebasestorage.app",
+    messagingSenderId: "643489339476",
+    appId: "1:643489339476:web:570e948837c21fedf0b5c1",
+    measurementId: "G-R6R24L14Z8"
+  };
+
+  // 3. Firebase 초기화
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  
+  console.log("Firebase가 성공적으로 연결되었습니다!");
+
+  // --- 기존 게임 로직 시작 ---
+  const FEE = 0.93; 
   const MULT_CONFIG = [
     {mult:1,  prob:0.46, label:'1배',  probLabel:'46%'},
     {mult:2,  prob:0.31, label:'2배',  probLabel:'31%'},
@@ -245,12 +268,9 @@
   const logs=[];
  
   function fmt(n){return n.toLocaleString();}
+  function calcPrize(bet, mult){ return Math.floor(bet * mult * FEE); }
  
-  function calcPrize(bet, mult){
-    return Math.floor(bet * mult * FEE);
-  }
- 
-  function updateStats(){
+  window.updateStats = function() {
     document.getElementById('balance').textContent=fmt(balance);
     const pEl=document.getElementById('profit');
     pEl.textContent=(profit>=0?'+':'')+fmt(profit);
@@ -266,7 +286,7 @@
     ['coin','snail','oe','slot'].forEach(g=>validateBet(g));
   }
  
-  function validateBet(game){
+  window.validateBet = function(game) {
     const input=document.getElementById(game+'-bet');
     const warn=document.getElementById(game+'-bet-warn');
     if(!input||!warn) return true;
@@ -304,19 +324,17 @@
       </div>`).join('');
   }
  
-  function clearLog(){if(!logs.length)return;if(confirm('게임 기록을 모두 지울까요?')){logs.length=0;gameCount=0;renderLog();}}
- 
-  function setBet(game,ratio){
+  window.clearLog = function(){if(!logs.length)return;if(confirm('게임 기록을 모두 지울까요?')){logs.length=0;gameCount=0;renderLog();}}
+  window.setBet = function(game,ratio){
     if(balance<=0)return;
     document.getElementById(game+'-bet').value=Math.max(1,Math.floor(balance*ratio));
     validateBet(game);
   }
- 
-  function toggleMenu(){document.getElementById('dropdown').classList.toggle('open');}
+  window.toggleMenu = function(){document.getElementById('dropdown').classList.toggle('open');}
   document.addEventListener('click',e=>{if(!document.getElementById('menu-btn').contains(e.target))document.getElementById('dropdown').classList.remove('open');});
  
   const GAME_TITLES={coin:'🪙 동전 던지기',snail:'🐌 달팽이 게임',oddeven:'🎲 홀짝 게임',slot:'🎰 슬롯머신'};
-  function switchGame(game){
+  window.switchGame = function(game){
     ['coin','snail','oddeven','slot'].forEach(g=>{
       document.getElementById(g+'-game').style.display=g===game?'block':'none';
       document.getElementById('menu-'+g).className='dropdown-item'+(g===game?' active':'');
@@ -339,14 +357,13 @@
   }
  
   const selectedMults={coin:null,snail:null,oe:null};
-  function selectMult(prefix,idx){
+  window.selectMult = function(prefix,idx){
     const game=prefix.split('-')[0];
     selectedMults[game]=MULT_CONFIG[idx];
     setMultBtn(prefix,idx);
     if(game==='coin')coinCheckReady();
     else if(game==='snail')snailCheckReady();
     else if(game==='oe')oeCheckReady();
-    // 예상 수익 업데이트
     updatePrizeDisplay(game);
   }
  
@@ -366,11 +383,11 @@
     }
   }
  
-  // ══ 동전 ══
+  // 동전 로직
   let coinChoice=null,coinFlipping=false;
-  function coinSelectChoice(c){coinChoice=c;setBtn('btn-heads',c==='heads');setBtn('btn-tails',c==='tails');coinCheckReady();}
+  window.coinSelectChoice = function(c){coinChoice=c;setBtn('btn-heads',c==='heads');setBtn('btn-tails',c==='tails');coinCheckReady();}
   function coinCheckReady(){document.getElementById('coin-flip-btn').disabled=!(coinChoice&&selectedMults.coin&&isBetValid('coin'));}
-  function coinFlip(){
+  window.coinFlip = function(){
     if(coinFlipping||!coinChoice||!selectedMults.coin||!isBetValid('coin'))return;
     const bet=getBet('coin'),m=selectedMults.coin;
     coinFlipping=true;document.getElementById('coin-flip-btn').disabled=true;
@@ -389,11 +406,11 @@
     },650);
   }
  
-  // ══ 달팽이 ══
+  // 달팽이 로직
   let snailDir=null,snailRunning=false;
-  function snailSelectDir(d){snailDir=d;setBtn('btn-left',d==='left');setBtn('btn-right',d==='right');snailCheckReady();}
+  window.snailSelectDir = function(d){snailDir=d;setBtn('btn-left',d==='left');setBtn('btn-right',d==='right');snailCheckReady();}
   function snailCheckReady(){document.getElementById('snail-go-btn').disabled=!(snailDir&&selectedMults.snail&&isBetValid('snail'));}
-  function snailGo(){
+  window.snailGo = function(){
     if(snailRunning||!snailDir||!selectedMults.snail||!isBetValid('snail'))return;
     const bet=getBet('snail'),m=selectedMults.snail;
     snailRunning=true;document.getElementById('snail-go-btn').disabled=true;document.getElementById('snail-go-btn').textContent='달리는 중...';
@@ -419,12 +436,12 @@
     },50);
   }
  
-  // ══ 홀짝 ══
+  // 홀짝 로직
   const DICE_FACES=['⚀','⚁','⚂','⚃','⚄','⚅'];
   let oeChoice=null,oeRolling=false;
-  function oeSelect(c){oeChoice=c;setBtn('btn-odd',c==='odd');setBtn('btn-even',c==='even');oeCheckReady();}
+  window.oeSelect = function(c){oeChoice=c;setBtn('btn-odd',c==='odd');setBtn('btn-even',c==='even');oeCheckReady();}
   function oeCheckReady(){document.getElementById('oe-roll-btn').disabled=!(oeChoice&&selectedMults.oe&&isBetValid('oe'));}
-  function oeRoll(){
+  window.oeRoll = function(){
     if(oeRolling||!oeChoice||!selectedMults.oe||!isBetValid('oe'))return;
     const bet=getBet('oe'),m=selectedMults.oe;
     oeRolling=true;document.getElementById('oe-roll-btn').disabled=true;
@@ -445,14 +462,14 @@
     },800);
   }
  
-  // ══ 슬롯 ══
+  // 슬롯 로직
   const SYMBOLS=['🍒','🍋','🍊','🍇','💎','7️⃣'];
   const PAYOUTS={'🍒':2,'🍋':3,'🍊':5,'🍇':10,'💎':20,'7️⃣':50};
   const WEIGHTS=[30,25,20,15,7,3];
   let slotSpinning=false;
   function weightedRandom(){const t=WEIGHTS.reduce((a,b)=>a+b,0);let r=Math.random()*t;for(let i=0;i<WEIGHTS.length;i++){r-=WEIGHTS[i];if(r<=0)return SYMBOLS[i];}return SYMBOLS[0];}
-  function slotCheckReady(){document.getElementById('slot-spin-btn').disabled=!isBetValid('slot')||slotSpinning;}
-  function slotSpin(){
+  window.slotCheckReady = function(){document.getElementById('slot-spin-btn').disabled=!isBetValid('slot')||slotSpinning;}
+  window.slotSpin = function(){
     if(slotSpinning||!isBetValid('slot'))return;
     const bet=getBet('slot');slotSpinning=true;slotCheckReady();
     document.getElementById('slot-result-msg').textContent='';
@@ -483,6 +500,7 @@
     });
   }
  
+  // 초기 세팅 실행
   buildMultBtns('coin-mult-btns','coin-mb-');
   buildMultBtns('snail-mult-btns','snail-mb-');
   buildMultBtns('oe-mult-btns','oe-mb-');
