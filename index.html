@@ -3,117 +3,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>미니 카지노 - 풀버전</title>
+  <title>미니 카지노 - 베팅 시스템</title>
   <style>
-    /* 기본 스타일 */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: sans-serif; background: #f5f5f5; display: flex; flex-direction: column; align-items: center; padding: 0 1rem 4rem; }
+    body { font-family: 'Pretendard', sans-serif; background: #f5f5f5; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; }
     
-    /* 로그인 섹션 */
-    #auth-container { width: 100%; max-width: 400px; margin-top: 100px; text-align: center; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    .google-btn { background: white; color: #444; width: 100%; border-radius: 5px; border: 1px solid #ddd; padding: 10px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
-    .google-btn:hover { background: #eee; }
-    .google-btn img { width: 20px; }
+    #auth-container { width: 100%; max-width: 400px; margin-top: 50px; text-align: center; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .google-btn { background: white; color: #444; width: 100%; border-radius: 8px; border: 1px solid #ddd; padding: 12px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
-    /* 게임 메인 컨테이너 */
-    .game-wrap { width: 100%; max-width: 480px; display: none; position: relative; }
+    .game-wrap { width: 100%; max-width: 500px; display: none; background: white; border-radius: 15px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     
-    /* 헤더 및 드롭다운 */
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 0 1rem; border-bottom: 1px solid #ddd; margin-bottom: 1.5rem; position: relative; }
-    .header-title { font-size: 18px; font-weight: bold; color: #111; }
-    .menu-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; flex-direction: column; gap: 5px; }
-    .menu-btn span { display: block; width: 22px; height: 2px; background: #333; border-radius: 2px; }
-    .dropdown { display: none; position: absolute; top: 50px; right: 0; background: #fff; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; min-width: 150px; }
-    .dropdown.open { display: block; }
-    .dropdown-item { padding: 12px 16px; font-size: 14px; cursor: pointer; color: #333; border-bottom: 1px solid #eee; }
-    .dropdown-item:last-child { border-bottom: none; }
-    .dropdown-item:hover { background: #f9f9f9; }
+    /* 헤더 */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .header-title { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
 
-    /* 통계 카드 */
-    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.5rem; }
-    .stat-card { background: #fff; border-radius: 8px; padding: 0.75rem; text-align: center; border: 1px solid #eee; }
-    .stat-label { font-size: 12px; color: #888; margin-bottom: 4px; }
-    .stat-value { font-size: 18px; font-weight: bold; }
+    /* 통계 영역 */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 30px; }
+    .stat-card { background: #f9f9f9; border-radius: 10px; padding: 12px 5px; text-align: center; border: 1px solid #eee; }
+    .stat-label { font-size: 11px; color: #888; margin-bottom: 5px; }
+    .stat-value { font-size: 16px; font-weight: bold; }
 
-    /* 게임 공통 UI */
-    .game-content { background: #fff; padding: 2rem; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; }
-    .game-icon { font-size: 3rem; margin-bottom: 1rem; }
-    .action-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; background: #378ADD; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-    .result-msg { margin-top: 15px; font-weight: bold; min-height: 24px; }
-    .result-win { color: #2ecc71; } .result-lose { color: #e74c3c; }
+    /* 동전 애니메이션 구역 */
+    .coin-area { width: 120px; height: 120px; background: #eee; border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; border: 5px solid #ddd; font-size: 40px; }
 
-    /* 게임별 섹션 숨김 처리 */
-    #coin-game, #snail-game, #oddeven-game, #slot-game { display: none; }
-    .active-game { display: block !important; }
+    /* 베팅 컨트롤 */
+    .control-group { margin-bottom: 20px; }
+    .control-label { font-size: 14px; color: #666; margin-bottom: 10px; display: block; }
+    
+    .btn-row { display: flex; gap: 8px; margin-bottom: 15px; }
+    .choice-btn, .multi-btn, .amount-preset { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 14px; transition: 0.2s; }
+    .choice-btn.active, .multi-btn.active { border: 2px solid #378ADD; color: #378ADD; font-weight: bold; }
+
+    .bet-input-wrap { display: flex; gap: 8px; }
+    .bet-input { flex: 2; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
+
+    /* 실행 버튼 */
+    .main-action-btn { width: 100%; padding: 16px; border-radius: 12px; border: none; background: #BBD6F1; color: #4A76A8; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .main-action-btn.ready { background: #378ADD; color: white; }
+
+    .fee-info { text-align: center; font-size: 12px; color: #999; margin-top: 15px; }
   </style>
 </head>
 <body>
 
-  <!-- 1. 로그인 화면 -->
+  <!-- 로그인 화면 -->
   <div id="auth-container">
     <h2 style="margin-bottom: 20px;">🎰 미니 카지노</h2>
-    <p style="color: #666; margin-bottom: 30px;">로그인 후 게임을 즐기세요</p>
     <button class="google-btn" onclick="googleLogin()">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google__G__Logo.svg" alt="Google">
-      Google 계정으로 시작하기
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google__G__Logo.svg" width="20"> Google 계정으로 시작
     </button>
   </div>
 
-  <!-- 2. 게임 메인 화면 -->
+  <!-- 메인 게임 화면 -->
   <div class="game-wrap" id="main-game">
     <div class="header">
-      <div class="header-title" id="current-game-title">🪙 동전 던지기</div>
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <span id="user-info" style="font-size: 13px; font-weight: 500;"></span>
-        <button class="menu-btn" onclick="toggleMenu()">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
-      
-      <!-- 게임 선택 메뉴 -->
-      <div class="dropdown" id="game-menu">
-        <div class="dropdown-item" onclick="switchGame('coin')">🪙 동전 던지기</div>
-        <div class="dropdown-item" onclick="switchGame('snail')">🐌 달팽이 레이스</div>
-        <div class="dropdown-item" onclick="switchGame('oddeven')">⚖️ 홀짝 맞추기</div>
-        <div class="dropdown-item" onclick="switchGame('slot')">🎰 슬롯머신</div>
-        <div class="dropdown-item" onclick="googleLogout()" style="color: #e74c3c; border-top: 1px solid #eee;">로그아웃</div>
-      </div>
+      <div class="header-title">🪙 동전 던지기</div>
+      <button onclick="googleLogout()" style="background:none; border:none; font-size:20px; cursor:pointer;">≡</button>
     </div>
 
-    <!-- 스탯 표시 -->
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-label">보유 잔액</div><div class="stat-value" id="balance">1,000</div></div>
-      <div class="stat-card"><div class="stat-label">오늘의 승리</div><div class="stat-value" id="wins">0</div></div>
+      <div class="stat-card"><div class="stat-label">잔액</div><div class="stat-value" id="balance">1,000</div></div>
+      <div class="stat-card"><div class="stat-label">총 손익</div><div class="stat-value" id="profit">+0</div></div>
+      <div class="stat-card"><div class="stat-label">승리</div><div class="stat-value" id="wins">0</div></div>
+      <div class="stat-card"><div class="stat-label">패배</div><div class="stat-value" id="losses">0</div></div>
     </div>
 
-    <!-- 게임 구역 -->
-    <div id="coin-game" class="game-content active-game">
-      <div class="game-icon">🪙</div>
-      <h3>앞면? 뒷면?</h3>
-      <div class="result-msg" id="coin-result"></div>
-      <button class="action-btn" onclick="playGame('coin')">동전 던지기 (-500)</button>
+    <div class="coin-area" id="coin-visual">🏛️</div>
+
+    <div class="control-group">
+      <span class="control-label">선택</span>
+      <div class="btn-row">
+        <button class="choice-btn" id="choice-front" onclick="setChoice('front')">앞면 👑</button>
+        <button class="choice-btn" id="choice-back" onclick="setChoice('back')">뒷면 🌙</button>
+      </div>
+
+      <span class="control-label">배율</span>
+      <div class="btn-row">
+        <button class="multi-btn" onclick="setMulti(1, 0.46, this)">1배<br><small>46%</small></button>
+        <button class="multi-btn" onclick="setMulti(2, 0.31, this)">2배<br><small>31%</small></button>
+        <button class="multi-btn" onclick="setMulti(3, 0.23, this)">3배<br><small>23%</small></button>
+        <button class="multi-btn" onclick="setMulti(5, 0.15, this)">5배<br><small>15%</small></button>
+      </div>
+
+      <span class="control-label">베팅액</span>
+      <div class="bet-input-wrap">
+        <input type="number" class="bet-input" id="bet-amount" value="100" min="10">
+        <button class="amount-preset" onclick="adjustBet(0.25)">1/4</button>
+        <button class="amount-preset" onclick="adjustBet(0.5)">절반</button>
+        <button class="amount-preset" onclick="adjustBet(1)">전액</button>
+      </div>
     </div>
 
-    <div id="snail-game" class="game-content">
-      <div class="game-icon">🐌</div>
-      <h3>달팽이 레이스</h3>
-      <div class="result-msg" id="snail-result"></div>
-      <button class="action-btn" onclick="playGame('snail')">경기 시작 (-500)</button>
-    </div>
-
-    <div id="oddeven-game" class="game-content">
-      <div class="game-icon">⚖️</div>
-      <h3>홀짝 맞추기</h3>
-      <div class="result-msg" id="oddeven-result"></div>
-      <button class="action-btn" onclick="playGame('oddeven')">홀짝 뽑기 (-500)</button>
-    </div>
-
-    <div id="slot-game" class="game-content">
-      <div class="game-icon">🎰</div>
-      <h3>럭키 슬롯</h3>
-      <div class="result-msg" id="slot-result"></div>
-      <button class="action-btn" onclick="playGame('slot')">레버 당기기 (-500)</button>
-    </div>
+    <button class="main-action-btn" id="play-btn" onclick="playGame()">선택 후 던지기</button>
+    <div class="fee-info">수수료 7% 적용 · 이겼을 때 상금의 93%만 획득</div>
   </div>
 
 <script type="module">
@@ -125,9 +107,7 @@
     authDomain: "bett-10c4f.firebaseapp.com",
     projectId: "bett-10c4f",
     storageBucket: "bett-10c4f.firebasestorage.app",
-    messagingSenderId: "643489339476",
-    appId: "1:643489339476:web:570e948837c21fedf0b5c1",
-    measurementId: "G-R6R24L14Z8"
+    appId: "1:643489339476:web:570e948837c21fedf0b5c1"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -135,70 +115,66 @@
   const provider = new GoogleAuthProvider();
 
   let balance = 1000;
-  let wins = 0;
+  let currentChoice = null;
+  let currentProb = 0.46;
+  let currentMulti = 1;
 
-  // 로그인/로그아웃 함수
-  window.googleLogin = () => signInWithPopup(auth, provider).catch(e => alert(e.message));
-  window.googleLogout = () => { toggleMenu(); signOut(auth); };
+  window.googleLogin = () => signInWithPopup(auth, provider);
+  window.googleLogout = () => signOut(auth);
 
-  // 메뉴 토글
-  window.toggleMenu = () => document.getElementById('game-menu').classList.toggle('open');
+  window.setChoice = (val) => {
+    currentChoice = val;
+    document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`choice-${val}`).classList.add('active');
+    checkReady();
+  }
 
-  // 게임 전환
-  window.switchGame = (gameType) => {
-    const games = ['coin', 'snail', 'oddeven', 'slot'];
-    const titles = { coin: '🪙 동전 던지기', snail: '🐌 달팽이 레이스', oddeven: '⚖️ 홀짝 맞추기', slot: '🎰 슬롯머신' };
+  window.setMulti = (multi, prob, btn) => {
+    currentMulti = multi;
+    currentProb = prob;
+    document.querySelectorAll('.multi-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  window.adjustBet = (ratio) => {
+    document.getElementById('bet-amount').value = Math.floor(balance * ratio);
+  }
+
+  function checkReady() {
+    if(currentChoice) document.getElementById('play-btn').classList.add('ready');
+  }
+
+  window.playGame = () => {
+    const bet = parseInt(document.getElementById('bet-amount').value);
+    if (!currentChoice) return alert("앞면/뒷면을 선택해주세요!");
+    if (bet > balance || bet <= 0) return alert("베팅 금액을 확인해주세요!");
+
+    balance -= bet;
+    const win = Math.random() < currentProb;
+    const visual = document.getElementById('coin-visual');
     
-    games.forEach(g => document.getElementById(`${g}-game`).classList.remove('active-game'));
-    document.getElementById(`${gameType}-game`).classList.add('active-game');
-    document.getElementById('current-game-title').textContent = titles[gameType];
-    toggleMenu();
-  };
-
-  // 공통 게임 로직
-  window.playGame = (type) => {
-    if (balance < 500) return alert("잔액이 부족합니다!");
-    
-    balance -= 500;
-    const isWin = Math.random() > 0.6; // 40% 확률로 승리
-    const resultEl = document.getElementById(`${type}-result`);
-
-    if (isWin) {
-      balance += 1200;
-      wins++;
-      resultEl.textContent = "🎊 당첨! +1,200";
-      resultEl.className = "result-msg result-win";
+    if (win) {
+      const prize = Math.floor(bet * currentMulti * 0.93); // 수수료 7% 제외
+      balance += (bet + prize);
+      visual.textContent = currentChoice === 'front' ? "👑" : "🌙";
+      alert(`승리! 상금 ${prize.toLocaleString()}원을 획득했습니다.`);
     } else {
-      resultEl.textContent = "💀 꽝! 다음 기회에..";
-      resultEl.className = "result-msg result-lose";
+      visual.textContent = currentChoice === 'front' ? "🌙" : "👑";
+      alert("꽝! 다음 기회에..");
     }
-
+    
     updateUI();
-  };
+  }
 
   function updateUI() {
     document.getElementById('balance').textContent = balance.toLocaleString();
-    document.getElementById('wins').textContent = wins;
+    // 손익 및 승패 로직 추가 가능
   }
 
-  // 인증 상태 감시
   onAuthStateChanged(auth, (user) => {
-    if (user) {
-      document.getElementById('auth-container').style.display = 'none';
-      document.getElementById('main-game').style.display = 'block';
-      document.getElementById('user-info').textContent = user.displayName.split(' ')[0];
-    } else {
-      document.getElementById('auth-container').style.display = 'block';
-      document.getElementById('main-game').style.display = 'none';
-    }
+    document.getElementById('auth-container').style.display = user ? 'none' : 'block';
+    document.getElementById('main-game').style.display = user ? 'block' : 'none';
   });
-
-  // 외부 클릭 시 메뉴 닫기
-  window.onclick = (e) => {
-    if (!e.target.matches('.menu-btn') && !e.target.matches('.menu-btn span')) {
-      document.getElementById('game-menu').classList.remove('open');
-    }
-  };
 </script>
 </body>
 </html>
