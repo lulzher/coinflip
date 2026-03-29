@@ -109,7 +109,7 @@
 </head>
 <body>
 <div id="loading-screen">불러오는 중...</div>
-
+ 
 <div class="game-wrap" id="main-content" style="display:none;">
   <div class="header">
     <div class="header-left">
@@ -131,17 +131,17 @@
       </div>
     </div>
   </div>
-
+ 
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">잔액</div><div class="stat-value" id="balance">-</div></div>
     <div class="stat-card"><div class="stat-label">총 손익</div><div class="stat-value" id="profit" style="color:#888;">-</div></div>
     <div class="stat-card"><div class="stat-label">승리</div><div class="stat-value" id="wins" style="color:#0F6E56;">-</div></div>
     <div class="stat-card"><div class="stat-label">패배</div><div class="stat-value" id="losses" style="color:#993C1D;">-</div></div>
   </div>
-
+ 
   <div class="charge-banner" id="charge-banner">💸 잔액이 0원이에요. 관리자에게 충전을 요청하세요!</div>
   <div class="save-indicator" id="save-indicator"></div>
-
+ 
   <div id="coin-game">
     <div class="coin-area"><div class="coin" id="coin">🪙</div><div class="result-msg" id="coin-result-msg"></div></div>
     <div class="info-bar">배율 <span id="coin-cur-mult">-</span> &nbsp;|&nbsp; 확률 <span id="coin-cur-prob">-</span> &nbsp;|&nbsp; 예상 수익 <span id="coin-cur-prize">-</span></div>
@@ -157,7 +157,7 @@
       <button class="action-btn" id="coin-flip-btn" onclick="coinFlip()" disabled>선택 후 던지기</button>
     </div>
   </div>
-
+ 
   <div id="snail-game">
     <div class="snail-track-wrap"><div class="snail-track" id="snail-track"><div class="track-line"></div><div class="track-label-left">← 왼쪽</div><div class="track-label-right">오른쪽 →</div><div class="snail" id="snail">🐌</div></div></div>
     <div class="result-msg" id="snail-result-msg" style="margin-bottom:0.5rem;"></div>
@@ -174,7 +174,7 @@
       <button class="action-btn" id="snail-go-btn" onclick="snailGo()" disabled>출발!</button>
     </div>
   </div>
-
+ 
   <div id="oddeven-game">
     <div class="dice-area"><div class="dice" id="dice">🎲</div><div class="result-msg" id="oddeven-result-msg"></div></div>
     <div class="info-bar">배율 <span id="oe-cur-mult">-</span> &nbsp;|&nbsp; 확률 <span id="oe-cur-prob">-</span> &nbsp;|&nbsp; 예상 수익 <span id="oe-cur-prize">-</span></div>
@@ -190,7 +190,7 @@
       <button class="action-btn" id="oe-roll-btn" onclick="oeRoll()" disabled>주사위 굴리기!</button>
     </div>
   </div>
-
+ 
   <div id="slot-game">
     <div class="slot-area">
       <div class="slot-machine">
@@ -215,18 +215,18 @@
       <button class="slot-spin-btn" id="slot-spin-btn" onclick="slotSpin()">🎰 스핀!</button>
     </div>
   </div>
-
+ 
   <div class="log-area">
     <div class="log-header"><div class="log-title" id="log-title">게임 기록</div><button class="log-clear-btn" onclick="clearLog()">기록 지우기</button></div>
     <div class="log-list" id="log-list"><div class="log-empty">아직 게임 기록이 없어요.</div></div>
   </div>
 </div>
-
+ 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, query, where, orderBy, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+ 
   const firebaseConfig = {
     apiKey: "AIzaSyBWEkYQqW0HF5jgklL3tELwLKyUxkmKh4Y",
     authDomain: "bett-10c4f.firebaseapp.com",
@@ -236,11 +236,11 @@
     appId: "1:643489339476:web:570e948837c21fedf0b5c1",
     measurementId: "G-R6R24L14Z8"
   };
-
+ 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-
+ 
   const FEE = 0.93;
   const MULT_CONFIG = [
     {mult:1, prob:0.46, label:'1배', probLabel:'46%'},
@@ -249,12 +249,18 @@
     {mult:5, prob:0.15, label:'5배', probLabel:'15%'},
     {mult:10,prob:0.08, label:'10배',probLabel:'8%'},
   ];
-
+ 
   let currentUser=null, balance=0, wins=0, losses=0, profit=0, gameCount=0;
   const logs=[];
-
+ 
+  let authChecked = false;
   onAuthStateChanged(auth, async user => {
-    if (!user) { window.location.href='index.html'; return; }
+    if (!user) {
+      if (authChecked) { window.location.href='index.html'; }
+      authChecked = true;
+      return;
+    }
+    authChecked = true;
     currentUser = user;
     document.getElementById('header-user').textContent = user.displayName || user.email;
     await loadUserData();
@@ -266,7 +272,7 @@
     updateStats();
     await loadLogs();
   });
-
+ 
   async function loadUserData() {
     try {
       const ref = doc(db,'users',currentUser.uid);
@@ -283,18 +289,18 @@
       balance=1000; wins=0; losses=0; profit=0;
     }
   }
-
+ 
   function saveUserData() {
     updateDoc(doc(db,'users',currentUser.uid), { balance, wins, losses, totalProfit:profit });
     const ind=document.getElementById('save-indicator');
     ind.textContent='✓ 저장됨';
     setTimeout(()=>ind.textContent='',2000);
   }
-
+ 
   function saveLog(entry) {
     addDoc(collection(db,'gameLogs'), { uid:currentUser.uid, userName:currentUser.displayName||currentUser.email, ...entry, createdAt:serverTimestamp() });
   }
-
+ 
   async function loadLogs() {
     const q = query(collection(db,'gameLogs'), where('uid','==',currentUser.uid), orderBy('createdAt','desc'), limit(50));
     const snaps = await getDocs(q);
@@ -302,12 +308,12 @@
     snaps.forEach(d=>{ logs.push(d.data()); gameCount++; });
     renderLog();
   }
-
+ 
   window.doLogout = async ()=>{ await signOut(auth); window.location.href='index.html'; };
-
+ 
   function fmt(n){return n.toLocaleString();}
   function calcPrize(bet,mult){return Math.floor(bet*mult*FEE);}
-
+ 
   function updateStats(){
     document.getElementById('balance').textContent=fmt(balance);
     const pEl=document.getElementById('profit');
@@ -323,7 +329,7 @@
     });
     ['coin','snail','oe','slot'].forEach(g=>validateBet(g));
   }
-
+ 
   function validateBet(game){
     const input=document.getElementById(game+'-bet');
     const warn=document.getElementById(game+'-bet-warn');
@@ -334,11 +340,11 @@
     if(val>balance){input.classList.add('over');warn.textContent=`잔액(${fmt(balance)}원)을 초과할 수 없어요`;refreshReady();return false;}
     input.classList.remove('over');warn.textContent='';refreshReady();return true;
   }
-
+ 
   function getBet(game){const v=parseInt(document.getElementById(game+'-bet').value);return isNaN(v)?0:v;}
   function isBetValid(game){if(balance<=0)return false;const b=getBet(game);return b>=1&&b<=balance;}
   function refreshReady(){coinCheckReady();snailCheckReady();oeCheckReady();slotCheckReady();}
-
+ 
   function recordResult(won,bet,prize,label){
     gameCount++;
     if(won){balance+=prize;profit+=prize;wins++;}
@@ -348,7 +354,7 @@
     if(logs.length>50)logs.pop();
     renderLog(); updateStats(); saveUserData(); saveLog(entry);
   }
-
+ 
   function renderLog(){
     const list=document.getElementById('log-list');
     document.getElementById('log-title').textContent=`게임 기록 (${logs.length}판)`;
@@ -362,12 +368,12 @@
         </div>
       </div>`).join('');
   }
-
+ 
   window.clearLog=()=>{if(!logs.length)return;if(confirm('화면 기록만 지워요.')){logs.length=0;gameCount=0;renderLog();}};
   window.setBet=(game,ratio)=>{if(balance<=0)return;document.getElementById(game+'-bet').value=Math.max(1,Math.floor(balance*ratio));validateBet(game);};
   window.toggleMenu=()=>document.getElementById('dropdown').classList.toggle('open');
   document.addEventListener('click',e=>{if(!document.getElementById('menu-btn').contains(e.target))document.getElementById('dropdown').classList.remove('open');});
-
+ 
   const GAME_TITLES={coin:'🪙 동전 던지기',snail:'🐌 달팽이 게임',oddeven:'🎲 홀짝 게임',slot:'🎰 슬롯머신'};
   window.switchGame=(game)=>{
     ['coin','snail','oddeven','slot'].forEach(g=>{
@@ -377,7 +383,7 @@
     document.getElementById('header-title').textContent=GAME_TITLES[game];
     document.getElementById('dropdown').classList.remove('open');
   };
-
+ 
   function setBtn(id,on){const b=document.getElementById(id);if(!b)return;b.style.background=on?'#378ADD':'#fff';b.style.borderColor=on?'#185FA5':'#bbb';b.style.color=on?'#fff':'#333';}
   function setMultBtn(prefix,idx){
     MULT_CONFIG.forEach((_,i)=>{
@@ -390,7 +396,7 @@
     document.getElementById(containerId).innerHTML=MULT_CONFIG.map((c,i)=>
       `<button class="mult-btn" id="${prefix}${i}" onclick="selectMult('${prefix}',${i})"><span>${c.label}</span><span class="prob">${c.probLabel}</span></button>`).join('');
   }
-
+ 
   const selectedMults={coin:null,snail:null,oe:null};
   window.selectMult=(prefix,idx)=>{
     const game=prefix.split('-')[0];
@@ -400,7 +406,7 @@
     else if(game==='snail')snailCheckReady();
     else if(game==='oe')oeCheckReady();
   };
-
+ 
   // ══ 동전 ══
   let coinChoice=null,coinFlipping=false;
   window.coinSelectChoice=(c)=>{coinChoice=c;setBtn('btn-heads',c==='heads');setBtn('btn-tails',c==='tails');coinCheckReady();};
@@ -422,7 +428,7 @@
       coinFlipping=false; coinCheckReady();
     },650);
   };
-
+ 
   // ══ 달팽이 ══
   let snailDir=null,snailRunning=false;
   window.snailSelectDir=(d)=>{snailDir=d;setBtn('btn-left',d==='left');setBtn('btn-right',d==='right');snailCheckReady();};
@@ -452,7 +458,7 @@
       },1300);
     },50);
   };
-
+ 
   // ══ 홀짝 ══
   const DICE_FACES=['⚀','⚁','⚂','⚃','⚄','⚅'];
   let oeChoice=null,oeRolling=false;
@@ -478,7 +484,7 @@
       document.getElementById('oe-roll-btn').disabled=false; oeRolling=false;
     },800);
   };
-
+ 
   // ══ 슬롯 ══
   const SYMBOLS=['🍒','🍋','🍊','🍇','💎','7️⃣'];
   const PAYOUTS={'🍒':2,'🍋':3,'🍊':5,'🍇':10,'💎':20,'7️⃣':50};
