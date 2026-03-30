@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>미니 카지노 - 로그인</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .card { background: #fff; border-radius: 16px; padding: 2rem; width: 100%; max-width: 400px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+    h1 { font-size: 22px; font-weight: 500; text-align: center; margin-bottom: 0.5rem; }
+    .subtitle { font-size: 13px; color: #888; text-align: center; margin-bottom: 2rem; }
+    .tab-btns { display: flex; gap: 0; margin-bottom: 1.5rem; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+    .tab-btn { flex: 1; padding: 10px; font-size: 14px; font-weight: 500; border: none; background: #fff; color: #888; cursor: pointer; }
+    .tab-btn.active { background: #378ADD; color: #fff; }
+    .form-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1rem; }
+    input { padding: 11px 14px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px; font-family: sans-serif; width: 100%; }
+    input:focus { outline: none; border-color: #378ADD; }
+    .btn { width: 100%; padding: 13px; border-radius: 10px; border: none; font-size: 15px; font-weight: 500; cursor: pointer; font-family: sans-serif; transition: opacity 0.15s; }
+    .btn:hover { opacity: 0.88; }
+    .btn-primary { background: #378ADD; color: #fff; }
+    .btn-google { background: #fff; color: #333; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+    .divider { display: flex; align-items: center; gap: 10px; margin: 1rem 0; color: #bbb; font-size: 12px; }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background:#eee; }
+    .error-msg { font-size: 12px; color: #D85A30; text-align: center; min-height: 18px; margin-top: 4px; }
+    .loading { text-align: center; font-size: 14px; color: #888; margin-top: 1rem; display: none; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>🎰 미니 카지노</h1>
+  <p class="subtitle">로그인하고 게임을 시작하세요</p>
+
+  <div class="tab-btns">
+    <button class="tab-btn active" onclick="switchTab('login')">로그인</button>
+    <button class="tab-btn" onclick="switchTab('signup')">회원가입</button>
+  </div>
+
+  <!-- 로그인 -->
+  <div id="login-form">
+    <div class="form-group">
+      <input type="email" id="login-email" placeholder="이메일" />
+      <input type="password" id="login-pw" placeholder="비밀번호" />
+    </div>
+    <button class="btn btn-primary" onclick="emailLogin()">로그인</button>
+    <div class="divider">또는</div>
+    <button class="btn btn-google" onclick="googleLogin()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      구글로 로그인
+    </button>
+  </div>
+
+  <!-- 회원가입 -->
+  <div id="signup-form" style="display:none;">
+    <div class="form-group">
+      <input type="text" id="signup-name" placeholder="닉네임" />
+      <input type="email" id="signup-email" placeholder="이메일" />
+      <input type="password" id="signup-pw" placeholder="비밀번호 (6자 이상)" />
+      <input type="password" id="signup-pw2" placeholder="비밀번호 확인" />
+    </div>
+    <button class="btn btn-primary" onclick="emailSignup()">회원가입</button>
+    <div class="divider">또는</div>
+    <button class="btn btn-google" onclick="googleLogin()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      구글로 시작하기
+    </button>
+  </div>
+
+  <div class="error-msg" id="error-msg"></div>
+  <div class="loading" id="loading">잠시만요...</div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBWEkYQqW0HF5jgklL3tELwLKyUxkmKh4Y",
+    authDomain: "bett-10c4f.firebaseapp.com",
+    projectId: "bett-10c4f",
+    storageBucket: "bett-10c4f.firebasestorage.app",
+    messagingSenderId: "643489339476",
+    appId: "1:643489339476:web:570e948837c21fedf0b5c1",
+    measurementId: "G-R6R24L14Z8"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const googleProvider = new GoogleAuthProvider();
+
+  // 이미 로그인된 경우 버튼만 보여줌
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('signup-form').style.display = 'none';
+      document.querySelectorAll('.tab-btns').forEach(el => el.style.display='none');
+      document.getElementById('error-msg').innerHTML = user.displayName || user.email + '님 로그인 중 · <a href="game.html">게임 시작하기 →</a>';
+    }
+  });
+
+  async function ensureUserDoc(user, displayName) {
+    const ref = doc(db, 'users', user.uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        uid: user.uid,
+        name: displayName || user.displayName || user.email.split('@')[0],
+        email: user.email,
+        balance: 1000,
+        totalProfit: 0,
+        wins: 0,
+        losses: 0,
+        createdAt: serverTimestamp()
+      });
+    }
+  }
+
+  function showError(msg) { document.getElementById('error-msg').textContent = msg; }
+  function showLoading(v) { document.getElementById('loading').style.display = v ? 'block' : 'none'; }
+
+  window.switchTab = (tab) => {
+    document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('signup-form').style.display = tab === 'signup' ? 'block' : 'none';
+    document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (i === 0) === (tab === 'login')));
+    showError('');
+  };
+
+  window.emailLogin = async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const pw = document.getElementById('login-pw').value;
+    if (!email || !pw) return showError('이메일과 비밀번호를 입력해주세요.');
+    showLoading(true); showError('');
+    try {
+      await signInWithEmailAndPassword(auth, email, pw);
+    } catch(e) {
+      showLoading(false);
+      showError(e.code === 'auth/invalid-credential' ? '이메일 또는 비밀번호가 틀렸어요.' : '로그인 실패: ' + e.message);
+    }
+  };
+
+  window.emailSignup = async () => {
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const pw = document.getElementById('signup-pw').value;
+    const pw2 = document.getElementById('signup-pw2').value;
+    if (!name) return showError('닉네임을 입력해주세요.');
+    if (!email) return showError('이메일을 입력해주세요.');
+    if (pw.length < 6) return showError('비밀번호는 6자 이상이어야 해요.');
+    if (pw !== pw2) return showError('비밀번호가 일치하지 않아요.');
+    showLoading(true); showError('');
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pw);
+      await updateProfile(cred.user, { displayName: name });
+      await ensureUserDoc(cred.user, name);
+    } catch(e) {
+      showLoading(false);
+      showError(e.code === 'auth/email-already-in-use' ? '이미 사용 중인 이메일이에요.' : '회원가입 실패: ' + e.message);
+    }
+  };
+
+  window.googleLogin = async () => {
+    showLoading(true); showError('');
+    try {
+      const cred = await signInWithPopup(auth, googleProvider);
+      await ensureUserDoc(cred.user);
+    } catch(e) {
+      showLoading(false);
+      showError('구글 로그인 실패: ' + e.message);
+    }
+  };
+</script>
+</body>
+</html>
