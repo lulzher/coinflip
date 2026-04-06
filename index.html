@@ -30,12 +30,12 @@
 <div class="card">
   <h1>🎰 미니 카지노</h1>
   <p class="subtitle">로그인하고 게임을 시작하세요</p>
-
+ 
   <div class="tab-btns">
     <button class="tab-btn active" onclick="switchTab('login')">로그인</button>
     <button class="tab-btn" onclick="switchTab('signup')">회원가입</button>
   </div>
-
+ 
   <!-- 로그인 -->
   <div id="login-form">
     <div class="form-group">
@@ -49,7 +49,7 @@
       구글로 로그인
     </button>
   </div>
-
+ 
   <!-- 회원가입 -->
   <div id="signup-form" style="display:none;">
     <div class="form-group">
@@ -65,16 +65,16 @@
       구글로 시작하기
     </button>
   </div>
-
+ 
   <div class="error-msg" id="error-msg"></div>
   <div class="loading" id="loading">잠시만요...</div>
 </div>
-
+ 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+ 
   const firebaseConfig = {
     apiKey: "AIzaSyBWEkYQqW0HF5jgklL3tELwLKyUxkmKh4Y",
     authDomain: "bett-10c4f.firebaseapp.com",
@@ -84,22 +84,25 @@
     appId: "1:643489339476:web:570e948837c21fedf0b5c1",
     measurementId: "G-R6R24L14Z8"
   };
-
+ 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
   const googleProvider = new GoogleAuthProvider();
-
+ 
   // 이미 로그인된 경우 버튼만 보여줌
   onAuthStateChanged(auth, user => {
     if (user) {
       document.getElementById('login-form').style.display = 'none';
       document.getElementById('signup-form').style.display = 'none';
-      document.querySelectorAll('.tab-btns').forEach(el => el.style.display='none');
-      document.getElementById('error-msg').innerHTML = user.displayName || user.email + '님 로그인 중 · <a href="game.html">게임 시작하기 →</a>';
+      document.querySelector('.tab-btns').style.display = 'none';
+      const name = user.displayName || user.email;
+      document.getElementById('error-msg').style.color = '#111';
+      document.getElementById('error-msg').style.fontSize = '15px';
+      document.getElementById('error-msg').innerHTML = name + '님 로그인 중<br><br><a href="game.html" style="display:inline-block;padding:12px 28px;background:#378ADD;color:#fff;border-radius:10px;text-decoration:none;font-weight:500;font-size:15px;">게임 시작하기 →</a>';
     }
   });
-
+ 
   async function ensureUserDoc(user, displayName) {
     const ref = doc(db, 'users', user.uid);
     const snap = await getDoc(ref);
@@ -116,17 +119,17 @@
       });
     }
   }
-
+ 
   function showError(msg) { document.getElementById('error-msg').textContent = msg; }
   function showLoading(v) { document.getElementById('loading').style.display = v ? 'block' : 'none'; }
-
+ 
   window.switchTab = (tab) => {
     document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
     document.getElementById('signup-form').style.display = tab === 'signup' ? 'block' : 'none';
     document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (i === 0) === (tab === 'login')));
     showError('');
   };
-
+ 
   window.emailLogin = async () => {
     const email = document.getElementById('login-email').value.trim();
     const pw = document.getElementById('login-pw').value;
@@ -139,7 +142,7 @@
       showError(e.code === 'auth/invalid-credential' ? '이메일 또는 비밀번호가 틀렸어요.' : '로그인 실패: ' + e.message);
     }
   };
-
+ 
   window.emailSignup = async () => {
     const name = document.getElementById('signup-name').value.trim();
     const email = document.getElementById('signup-email').value.trim();
@@ -159,7 +162,7 @@
       showError(e.code === 'auth/email-already-in-use' ? '이미 사용 중인 이메일이에요.' : '회원가입 실패: ' + e.message);
     }
   };
-
+ 
   window.googleLogin = async () => {
     showLoading(true); showError('');
     try {
